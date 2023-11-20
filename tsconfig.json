@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    "target": "ES2015",
+    "lib": ["ESNext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "noFallthroughCasesInSwitch": true,
+    "baseUrl": "./",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "isolatedModules": true,
+    "noEmit": true,
+    "allowUnusedLabels": false,
+    "allowUnreachableCode": false,
+    "pretty": true,
+    "alwaysStrict": true,
+    "noImplicitAny": true,
+    "noImplicitOverride": true,
+    "noImplicitThis": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "removeComments": true,
+    "useUnknownInCatchVariables": true,
+    "exactOptionalPropertyTypes": true,
+    "paths": {
+      "@core/*": ["src/core/*"],
+      "@features/*": ["src/features/*"]
+    }
+  },
+  "include": ["src"]
+}
