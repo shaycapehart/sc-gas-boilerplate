@@ -1,0 +1,57 @@
+{
+  "timeZone": "America/Los_Angeles",
+  "dependencies": {
+    "enabledAdvancedServices": [],
+    "libraries": []
+  },
+  "exceptionLogging": "STACKDRIVER",
+  "runtimeVersion": "V8",
+  "oauthScopes": [
+    "https://www.googleapis.com/auth/script.locale",
+    "https://www.googleapis.com/auth/script.container.ui",
+    "https://www.googleapis.com/auth/script.external_request",
+    "https://www.googleapis.com/auth/drive",
+    "https://www.googleapis.com/auth/drive.file",
+    "https://www.googleapis.com/auth/drive.addons.metadata.readonly",
+    "https://www.googleapis.com/auth/spreadsheets"
+  ],
+  "urlFetchWhitelist": [
+    "https://github.com/",
+    "https://material-icons.github.io/",
+    "https://ssl.gstatic.com/",
+    "https://dummy-function-from-resources.net/",
+    "https://docs.google.com/"
+  ],
+  "addOns": {
+    "common": {
+      "layoutProperties": {
+        "primaryColor": "#673AB7",
+        "secondaryColor": "#89B73A"
+      },
+      "logoUrl": "https://shaycapehart.github.io/web-host-files/mi/png/black/twotone/widgets-twotone.png",
+      "name": "GAS Addon Boilerplate",
+      "universalActions": [
+        {
+          "label": "Settings",
+          "runFunction": "handleShowSettings"
+        }
+      ],
+      "openLinkUrlPrefixes": [
+        "https://fonts.gstatic.com/s/i/materialiconstwotone/",
+        "https://github.com",
+        "https://material-icons.github.io",
+        "https://ssl.gstatic.com",
+        "https://dummy-function-from-resources.net"
+      ],
+      "useLocaleFromApp": true
+    },
+    "sheets": {
+      "homepageTrigger": {
+        "runFunction": "handleShowSheetsHomepage"
+      },
+      "onFileScopeGrantedTrigger": {
+        "runFunction": "onFileScopeGranted"
+      }
+    }
+  }
+}
