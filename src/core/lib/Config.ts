@@ -1,6 +1,6 @@
 import { Settings } from '@core/environment/Settings';
-import { SettingsOptions } from '../types/addon';
-import { AppLib } from '../types/globals';
+import { SettingsOptions } from '@core/types/addon';
+import { AppLib } from '@core/types/globals';
 
 // console.log('Reading CONFIG')
 globalThis.g = {};

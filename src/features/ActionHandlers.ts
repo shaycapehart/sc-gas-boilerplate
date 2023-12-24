@@ -1,5 +1,5 @@
 import { Settings } from '@core/environment/Settings';
-import { MP, CP } from '@core/lib/COLORS';
+import { MP, COLORS } from '@core/lib/COLORS';
 import { SortType, TableFormatOptionsType } from '@core/types/addon';
 import { Utils } from '@core/utils/Utils';
 import { Views } from './Views';
@@ -49,18 +49,18 @@ namespace ActionHandlers {
     const CENTER = 'center';
     const BOLD = 'bold';
 
-    const settings = Settings.getSettingsForUser();
+    const { BASE, LIGHT, LIGHTER, LIGHTEST } = COLORS[color];
 
     // define the color shades
     const PALLETE = {
-      BACKGROUND_TITLE: Settings.COLORS[color].BASE,
-      BACKGROUND_HEADERS: Settings.COLORS[color].LIGHT,
-      BACKGROUND_DATA_FIRST: Settings.COLORS[color].LIGHTEST,
-      BACKGROUND_DATA_SECOND: Settings.COLORS[color].LIGHTER,
-      BACKGROUND_FOOTER: Settings.COLORS[color].LIGHT,
-      BORDERS_ALL: Settings.COLORS[color].BASE,
-      BORDERS_HORIZONTAL: Settings.COLORS[color].BASE,
-      BORDERS_VERTICAL: Settings.COLORS[color].BASE,
+      BACKGROUND_TITLE: BASE,
+      BACKGROUND_HEADERS: LIGHT,
+      BACKGROUND_DATA_FIRST: LIGHTEST,
+      BACKGROUND_DATA_SECOND: LIGHTER,
+      BACKGROUND_FOOTER: LIGHT,
+      BORDERS_ALL: BASE,
+      BORDERS_HORIZONTAL: BASE,
+      BORDERS_VERTICAL: BASE,
       BORDERS_TITLE_BOTTOM: null,
       BORDERS_HEADERS_BOTTOM: null,
       BORDERS_HEADERS_VERTICAL: null,
@@ -1120,8 +1120,8 @@ namespace ActionHandlers {
   export function showSettings(
     e: GoogleAppsScript.Addons.EventObject,
   ): GoogleAppsScript.Card_Service.UniversalActionResponse {
-    var settings = Settings.getSettingsForUser();
-    var card = Views.buildSettingsCard(settings);
+    // var settings = Settings.getSettingsForUser();
+    var card = Views.buildSettingsCard();
 
     return CardService.newUniversalActionResponseBuilder()
       .displayAddOnCards([card])
@@ -1137,8 +1137,21 @@ namespace ActionHandlers {
   export function saveSettings(
     e: GoogleAppsScript.Addons.EventObject,
   ): GoogleAppsScript.Card_Service.ActionResponse {
-    const previousSettings = Settings.getSettingsForUser();
-    var formInputs = e.commonEventObject.formInputs;
+    var {
+      backgroundTitle,
+      backgroundHeaders,
+      backgroundDataFirst,
+      backgroundDataSecond,
+      backgroundFooter,
+      bordersAll,
+      bordersHorizontal,
+      bordersVertical,
+      bordersTitleBottom,
+      bordersHeadersBottom,
+      bordersHeadersVertical,
+      bordersThickness,
+      debugControl,
+    } = e.commonEventObject.formInputs;
     const tableOptions: string[] =
       e.commonEventObject.formInputs?.tableOptions?.stringInputs?.value || [];
     var settings = {
@@ -1151,41 +1164,25 @@ namespace ActionHandlers {
       noBottom: tableOptions.includes('noBottom'),
       centerAll: tableOptions.includes('centerAll'),
       alternating: tableOptions.includes('alternating'),
-      backgroundTitle: parseInt(
-        formInputs.backgroundTitle.stringInputs.value[0],
-      ),
-      backgroundHeaders: parseInt(
-        formInputs.backgroundHeaders.stringInputs.value[0],
-      ),
-      backgroundDataFirst: parseInt(
-        formInputs.backgroundDataFirst.stringInputs.value[0],
-      ),
+      backgroundTitle: parseInt(backgroundTitle.stringInputs.value[0]),
+      backgroundHeaders: parseInt(backgroundHeaders.stringInputs.value[0]),
+      backgroundDataFirst: parseInt(backgroundDataFirst.stringInputs.value[0]),
       backgroundDataSecond: parseInt(
-        formInputs.backgroundDataSecond.stringInputs.value[0],
+        backgroundDataSecond.stringInputs.value[0],
       ),
-      backgroundFooter: parseInt(
-        formInputs.backgroundFooter.stringInputs.value[0],
-      ),
-      bordersAll: parseInt(formInputs.bordersAll.stringInputs.value[0]),
-      bordersHorizontal: parseInt(
-        formInputs.bordersHorizontal.stringInputs.value[0],
-      ),
-      bordersVertical: parseInt(
-        formInputs.bordersVertical.stringInputs.value[0],
-      ),
-      bordersTitleBottom: parseInt(
-        formInputs.bordersTitleBottom.stringInputs.value[0],
-      ),
+      backgroundFooter: parseInt(backgroundFooter.stringInputs.value[0]),
+      bordersAll: parseInt(bordersAll.stringInputs.value[0]),
+      bordersHorizontal: parseInt(bordersHorizontal.stringInputs.value[0]),
+      bordersVertical: parseInt(bordersVertical.stringInputs.value[0]),
+      bordersTitleBottom: parseInt(bordersTitleBottom.stringInputs.value[0]),
       bordersHeadersBottom: parseInt(
-        formInputs.bordersHeadersBottom.stringInputs.value[0],
+        bordersHeadersBottom.stringInputs.value[0],
       ),
       bordersHeadersVertical: parseInt(
-        formInputs.bordersHeadersVertical.stringInputs.value[0],
+        bordersHeadersVertical.stringInputs.value[0],
       ),
-      bordersThickness: parseInt(
-        formInputs.bordersThickness.stringInputs.value[0],
-      ),
-      debugControl: formInputs.debugControl ? 'ON' : 'OFF',
+      bordersThickness: parseInt(bordersThickness.stringInputs.value[0]),
+      debugControl: debugControl ? 'ON' : 'OFF',
     };
 
     Settings.updateSettingsForUser(settings);
@@ -1201,23 +1198,7 @@ namespace ActionHandlers {
    */
   export function resetSettings(): GoogleAppsScript.Card_Service.ActionResponse {
     Settings.resetSettingsForUser();
-    var settings = Settings.getSettingsForUser();
-    var card = Views.buildSettingsCard({
-      backgroundTitle: settings.backgroundTitle,
-      backgroundHeaders: settings.backgroundHeaders,
-      backgroundDataFirst: settings.backgroundDataFirst,
-      backgroundDataSecond: settings.backgroundDataSecond,
-      backgroundFooter: settings.backgroundFooter,
-      bordersAll: settings.bordersAll,
-      bordersHorizontal: settings.bordersHorizontal,
-      bordersVertical: settings.bordersVertical,
-      bordersTitleBottom: settings.bordersTitleBottom,
-      bordersHeadersBottom: settings.bordersHeadersBottom,
-      bordersHeadersVertical: settings.bordersHeadersVertical,
-      bordersThickness: settings.bordersThickness,
-      debugControl: settings.debugControl,
-      helpControl: settings.helpControl,
-    });
+    var card = Views.buildSettingsCard();
     return CardService.newActionResponseBuilder()
       .setNavigation(CardService.newNavigation().updateCard(card))
       .setNotification(CardService.newNotification().setText('Settings reset.'))
@@ -1225,8 +1206,7 @@ namespace ActionHandlers {
   }
 
   export function prepareForHelp() {
-    var settings = Settings.getSettingsForUser();
-    Settings.updateSettingsForUser({ ...settings, helpControl: 'on' });
+    Settings.updateSettingsForUser({ ...g.UserSettings, helpControl: 'on' });
     return CardService.newActionResponseBuilder()
       .setNotification(
         CardService.newNotification().setText(
@@ -1237,8 +1217,7 @@ namespace ActionHandlers {
   }
 
   export function getHelp(actionName: string) {
-    var settings = Settings.getSettingsForUser();
-    Settings.updateSettingsForUser({ ...settings, helpControl: 'off' });
+    Settings.updateSettingsForUser({ ...g.UserSettings, helpControl: 'off' });
     return CardService.newActionResponseBuilder()
       .setNotification(
         CardService.newNotification().setText(
@@ -1255,8 +1234,7 @@ namespace ActionHandlers {
   export function showSheetsHomepage():
     | GoogleAppsScript.Card_Service.Card
     | GoogleAppsScript.Card_Service.Card[] {
-    var settings = Settings.getSettingsForUser();
-    var toolsCard = Views.buildToolsCard(settings);
+    var toolsCard = Views.buildToolsCard();
     return [toolsCard];
   }
 
@@ -1284,7 +1262,7 @@ namespace ActionHandlers {
     const parts = Utils.groupText(formula);
     let cum = -1;
 
-    g.ActiveRange.setFontColor(Settings.COLORS.GREEN.DARKER)
+    g.ActiveRange.setFontColor(COLORS.GREEN.DARKER)
       .setFontWeight('bold')
       .setFontStyle('italic')
       .setFontFamily('Inconsolata');
@@ -1296,7 +1274,7 @@ namespace ActionHandlers {
         (cum += parts[0].length),
         (cum += parts[1].length),
         SpreadsheetApp.newTextStyle()
-          .setForegroundColor(Settings.COLORS.ORANGE.BOLD)
+          .setForegroundColor(COLORS.ORANGE.BOLD)
           .build(),
       );
     }
@@ -1306,7 +1284,7 @@ namespace ActionHandlers {
         (cum += 1),
         (cum += parts[3].length),
         SpreadsheetApp.newTextStyle()
-          .setForegroundColor(Settings.COLORS.PURPLE.BOLD)
+          .setForegroundColor(COLORS.PURPLE.BOLD)
           .build(),
       );
     }
@@ -1316,7 +1294,7 @@ namespace ActionHandlers {
         (cum += 1),
         (cum += parts[5].length),
         SpreadsheetApp.newTextStyle()
-          .setForegroundColor(Settings.COLORS.BLUE.BOLD)
+          .setForegroundColor(COLORS.BLUE.BOLD)
           .build(),
       );
     }

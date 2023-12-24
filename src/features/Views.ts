@@ -1,6 +1,5 @@
-import { Settings } from '@core/environment/Settings';
-import { MP, CP } from '@core/lib/COLORS';
-import { ErrorCardOptions, SettingsOptions } from '@core/types/addon';
+import { COLORS } from '@core/lib/COLORS';
+import { ErrorCardOptions } from '@core/types/addon';
 
 namespace Views {
   const DIVIDER = CardService.newDivider();
@@ -218,7 +217,7 @@ namespace Views {
     let buttonSet = CardService.newButtonSet();
 
     ['RED', 'ORANGE', 'GREEN', 'BLUE', 'PURPLE', 'PINK'].forEach((color) => {
-      let hex = Settings.COLORS[color].BASE;
+      let hex = COLORS[color].BASE;
       buttonSet.addButton(
         createActionIconButtonWidget_({
           title: color,
@@ -255,7 +254,7 @@ namespace Views {
       .build();
   }
 
-  export function buildToolsCard(opts: SettingsOptions) {
+  export function buildToolsCard() {
     const logPlaygroundSection = CardService.newCardSection()
       .setHeader('LOGS AND PLAYGROUNDS')
       .setCollapsible(true)
@@ -316,47 +315,47 @@ namespace Views {
               {
                 label: 'Title',
                 value: 'hasTitle',
-                selected: opts.hasTitle,
+                selected: g.UserSettings.hasTitle,
               },
               {
                 label: 'Headers',
                 value: 'hasHeaders',
-                selected: opts.hasHeaders,
+                selected: g.UserSettings.hasHeaders,
               },
               {
                 label: 'Footer',
                 value: 'hasFooter',
-                selected: opts.hasFooter,
+                selected: g.UserSettings.hasFooter,
               },
               {
                 label: 'Leave top unchanged',
                 value: 'leaveTop',
-                selected: opts.leaveTop,
+                selected: g.UserSettings.leaveTop,
               },
               {
                 label: 'Leave left unchanged',
                 value: 'leaveLeft',
-                selected: opts.leaveLeft,
+                selected: g.UserSettings.leaveLeft,
               },
               {
                 label: 'Leave bottom unchanged',
                 value: 'leaveBottom',
-                selected: opts.leaveBottom,
+                selected: g.UserSettings.leaveBottom,
               },
               {
                 label: 'No bottom',
                 value: 'noBottom',
-                selected: opts.noBottom,
+                selected: g.UserSettings.noBottom,
               },
               {
                 label: 'Center all',
                 value: 'centerAll',
-                selected: opts.centerAll,
+                selected: g.UserSettings.centerAll,
               },
               {
                 label: 'Alternating',
                 value: 'alternating',
-                selected: opts.alternating,
+                selected: g.UserSettings.alternating,
               },
             ],
           },
@@ -490,7 +489,7 @@ namespace Views {
    * @param {string} opts.helpControl
    * @return {Card}
    */
-  export function buildSettingsCard(opts: SettingsOptions) {
+  export function buildSettingsCard() {
     const bordersThicknessWidget = createFormElementWidget_({
       title: 'Border thickness',
       id: 'bordersThickness',
@@ -500,7 +499,7 @@ namespace Views {
           ['Medium', 2],
           ['Thick', 3],
         ],
-        defaultChoice: opts.bordersThickness,
+        defaultChoice: g.UserSettings.bordersThickness || 1,
       },
     });
     const debugSwitchWidget = CardService.newDecoratedText()
@@ -511,7 +510,7 @@ namespace Views {
           .setControlType(CardService.SwitchControlType.SWITCH)
           .setFieldName('debugControl')
           .setValue('ON')
-          .setSelected(opts.debugControl === 'ON'),
+          .setSelected(g.UserSettings.debugControl === 'ON'),
       );
 
     const actionButtonsWidget = CardService.newButtonSet()
@@ -550,7 +549,7 @@ namespace Views {
           id,
           dropdown: {
             choices: [...new Array(25)].map((_, i) => [`${i + 1}`, i + 1]),
-            defaultChoice: opts[id],
+            defaultChoice: g.UserSettings[id],
           },
         }),
       ),

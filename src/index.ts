@@ -3,6 +3,7 @@ import { Shlog } from '@core/logging/Shlog';
 import { Settings } from '@core/environment/Settings';
 import { Views } from '@features/Views';
 import { ActionHandlers } from '@features/ActionHandlers';
+import { COLORS } from '@core/lib/COLORS';
 
 Shlog.init();
 
@@ -175,16 +176,16 @@ function dummy() {
       'Darker',
       'Darkest',
     ],
-    ...Object.keys(Settings.COLORS).map((key) => {
+    ...Object.keys(COLORS).map((key) => {
       return [
         key,
-        Settings.COLORS[key].BOLD,
-        Settings.COLORS[key].LIGHTEST,
-        Settings.COLORS[key].LIGHTER,
-        Settings.COLORS[key].LIGHT,
-        Settings.COLORS[key].DARK,
-        Settings.COLORS[key].DARKER,
-        Settings.COLORS[key].DARKEST,
+        COLORS[key].BOLD,
+        COLORS[key].LIGHTEST,
+        COLORS[key].LIGHTER,
+        COLORS[key].LIGHT,
+        COLORS[key].DARK,
+        COLORS[key].DARKER,
+        COLORS[key].DARKEST,
       ];
     }),
   ];
