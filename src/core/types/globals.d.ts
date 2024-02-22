@@ -2,7 +2,7 @@ import { default as dayjs } from 'dayjs';
 import 'dayjs/plugin/duration';
 import currency from 'currency.js';
 import beautify from 'json-beautify';
-import { SettingsOptions } from './addon';
+import { ImageCollectionType, SettingsOptions } from './addon';
 
 declare var AppLib: {
   dayjs: typeof dayjs;
@@ -20,6 +20,7 @@ declare global {
     ActiveStartRow?: number;
     ABCs?: string[];
     LOG_SHEETNAME?: string;
+    SheetIcons?: ImageCollectionType;
   };
   var daygs: typeof dayjs;
   var beautifygs: typeof beautify;

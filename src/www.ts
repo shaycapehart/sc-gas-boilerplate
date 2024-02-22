@@ -26,14 +26,29 @@ const onRequestFileScopeButtonClicked =
  * Entry point for the add-on. Handles an user event and
  * invokes the corresponding action
  *
- * @param event - user event to process
  * @return The settings card
  */
 function handleShowSettings(
   event: GoogleAppsScript.Addons.EventObject,
 ): AddonResponse {
-  event.commonEventObject.parameters = { action: 'showSettings' };
-  return dispatchActionInternal(event, universalActionErrorHandler);
+  var settings = Settings.getSettingsForUser();
+  var card = Views.buildSettingsCard({
+    backgroundTitle: settings.backgroundTitle,
+    backgroundHeaders: settings.backgroundHeaders,
+    backgroundDataFirst: settings.backgroundDataFirst,
+    backgroundDataSecond: settings.backgroundDataSecond,
+    backgroundFooter: settings.backgroundFooter,
+    bordersAll: settings.bordersAll,
+    bordersHorizontal: settings.bordersHorizontal,
+    bordersVertical: settings.bordersVertical,
+    bordersTitleBottom: settings.bordersTitleBottom,
+    bordersHeadersBottom: settings.bordersHeadersBottom,
+    bordersHeadersVertical: settings.bordersHeadersVertical,
+    debugControl: settings.debugControl,
+    helpControl: settings.helpControl,
+    bordersThickness: settings.bordersThickness,
+  });
+  return [card];
 }
 
 /**
@@ -92,15 +107,12 @@ function dispatchActionInternal(
     if (settings.helpControl === 'on') {
       return ActionHandlers.getHelp(actionName);
     }
-
     var actionFn = ActionHandlers[actionName];
     if (!actionFn) {
       throw new Error('Action not found: ' + actionName);
     }
-
     return actionFn(event);
   } catch (err) {
-    console.error(err);
     if (optErrorHandler) {
       return optErrorHandler(err);
     } else {
@@ -162,6 +174,25 @@ function actionErrorHandler(
   return CardService.newActionResponseBuilder()
     .setNavigation(CardService.newNavigation().pushCard(card))
     .build();
+}
+
+function onOpen(e) {
+  SpreadsheetApp.getUi()
+    .createMenu('My Sample React Project') // edit me!
+    .addItem('Test Menu Action', 'ActionHandlers.createNamedRangesDashboard')
+    .addItem('PLayground1', 'ActionHandlers.playground1')
+    .addItem('PLayground3', 'ActionHandlers.playground3')
+    .addItem('Show Settings', 'ActionHandlers.showSettings')
+    .addItem('Show Event Object', 'showEventObject')
+    .addItem('Run onOpen', 'onOpen')
+    .addToUi();
+}
+
+function testMenuAction(e) {
+  ActionHandlers.showSettings(e);
+}
+function showEventObject(e) {
+  console.log('e:', JSON.stringify(e));
 }
 
 function dummy() {

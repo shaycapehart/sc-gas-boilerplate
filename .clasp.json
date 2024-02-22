@@ -1,6 +1,1 @@
-{
-  "scriptId": "1elbwkR__bd3wNlrMwxMG2D4enD8P09mMHlqXxfvYAJM370AnobL6KgfE",
-  "rootDir": "./src",
-  "parentId": ["17FHglp8PGyfMGPNAVQ_YaVwxkzhtJduKep_5m2UAz6g"],
-  "filePushOrder": ["src/core/lib/AppLib.js"]
-}
+{"scriptId":"1elbwkR__bd3wNlrMwxMG2D4enD8P09mMHlqXxfvYAJM370AnobL6KgfE","rootDir":"./src","parentId":["17FHglp8PGyfMGPNAVQ_YaVwxkzhtJduKep_5m2UAz6g"],"filePushOrder":["src/core/lib/AppLib.js"]}

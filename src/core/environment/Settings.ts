@@ -1,9 +1,10 @@
 import { SettingsOptions } from '@core/types/addon';
 
 namespace Settings {
-  export const DEBUG = false;
+  export const DEBUG = true;
   const SETTINGS_KEY = 'settings';
-  export const APP_TITLE = 'GV-Tools';
+  export const APP_TITLE = 'SC GAS BOILERPLATE';
+  export const SPREADSHEET_ICON_FOLDER_ID = '1pC5a4ehrnLL5_McnQPN5UXm1gQ2hVf9R';
   export const DEFAULT = {
     TABLE: {
       HAS_TITLE: false,
@@ -50,8 +51,8 @@ namespace Settings {
    * @return {Object}
    */
   export function getSettingsForUser(): SettingsOptions {
-    var savedSettings = cachedPropertiesForUser_().get(SETTINGS_KEY, {});
-    return Object.assign(
+    const savedSettings = cachedPropertiesForUser_().get(SETTINGS_KEY, {});
+    const settings = Object.assign(
       {},
       {
         hasTitle: Settings.DEFAULT.TABLE.HAS_TITLE,
@@ -77,9 +78,12 @@ namespace Settings {
         bordersHeadersVertical: Settings.DEFAULT.BORDERS_HEADERS_VERTICAL,
         helpControl: Settings.DEFAULT.HELP_CONTROL,
         debugControl: Settings.DEFAULT.DEBUG_CONTROL,
+        startdateMsSinceEpochStr: `${daygs().startOf('month').valueOf()}`,
+        enddateMsSinceEpochStr: `${daygs().endOf('month').valueOf()}`,
       },
       savedSettings,
     );
+    return settings;
   }
 
   /**

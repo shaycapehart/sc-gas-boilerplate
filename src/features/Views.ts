@@ -1,8 +1,10 @@
 import { COLORS } from '@core/lib/COLORS';
-import { ErrorCardOptions } from '@core/types/addon';
+import { Shlog } from '@core/logging/Shlog';
+import { ErrorCardOptions, SettingsOptions } from '@core/types/addon';
 
 namespace Views {
   const DIVIDER = CardService.newDivider();
+
   /**
    * A widgets object containing versatile action widgets for every action needed for Workspace Addon.
    * Eqch widget will generally have at a minimum: title, description, and action. Most will also have an iconUrl
@@ -10,76 +12,11 @@ namespace Views {
    * include parameters for the action and details about switch toggle.
    */
   const widgets = {
-    helpWidget: createActionWidget_({
-      title: 'Click here and then any command',
-      description:
-        'Get help on any button by first clicking this icon and then click the other button to see a description.',
-      iconUrl: buildIconUrl_('help_outline'),
-      action: 'prepareForHelp',
-    }),
-    cropToSelectionWidget: createActionWidget_({
-      title: 'Crop to Selection',
-      description: 'Crop sheet rows and columns down to selected range',
-      iconUrl: buildIconUrl_('crop_square'),
-      action: 'cropToSelection',
-    }),
-    cropToDataWidget: createActionWidget_({
-      title: 'Crop to Data',
-      description: 'Crop sheet rows and columns down to data range',
-      iconUrl: buildIconUrl_('crop'),
-      action: 'cropToData',
-    }),
-    makeRangeStaticWidget: createActionWidget_({
-      title: 'Make range static',
-      description: 'Convert selected formulas to notes',
-      action: 'makeRangeStatic',
-    }),
-    makeRangeDynamicWidget: createActionWidget_({
-      title: 'Make range dynamic',
-      description: 'Restore selected note formulas',
-      action: 'makeRangeDynamic',
-    }),
-    makeSheetStaticWidget: createActionWidget_({
-      title: 'Make sheet static',
-      description: 'Convert all formulas to notes',
-      iconUrl: buildIconUrl_('lock'),
-      action: 'makeSheetStatic',
-    }),
-    makeSheetDynamicWidget: createActionWidget_({
-      title: 'Make sheet dynamic',
-      description: 'Restore all note formulas',
-      iconUrl: buildIconUrl_('lock_open'),
-      action: 'makeSheetDynamic',
-    }),
-    setBackgroundsUsingCellValuesWidget: createActionWidget_({
-      title: 'Set Background',
-      description: 'Set background color using cell value',
-      iconUrl: buildIconUrl_('brush'),
-      action: 'setBackgroundsColorsUsingValues',
-    }),
-    getBackgroundColorToNotesWidget: createActionWidget_({
-      title: 'Get Background Colors To Notes',
-      description: 'Put HEX and RGB info in notes',
-      iconUrl: buildIconUrl_('palette'),
-      action: 'getBackgroundColorsToNotes',
-    }),
-    getBackgroundColorToValuesWidget: createActionWidget_({
-      title: 'Get Background Colors To Values',
-      description: 'Put HEX value in cells',
-      iconUrl: buildIconUrl_('colorize'),
-      action: 'getBackgroundColorsToValues',
-    }),
-    createSheetOfTogglesWidget: createActionWidget_({
-      title: 'Create sheet of toggles',
-      description: 'Create a sheet of colored toggle checkboxes',
-      iconUrl: buildIconUrl_('apps'),
-      action: 'createSheetWithToggleButtons',
-    }),
-    squareSelectedCellsWidget: createActionWidget_({
-      title: 'Square cells',
-      description: 'Give same width/height to selected cells',
-      iconUrl: buildIconUrl_('view_module'),
-      action: 'squareSelectedCells',
+    emptyLogRecordsWidget: createActionWidget_({
+      title: 'Empty logs',
+      description: 'Empty cached log records',
+      iconUrl: buildIconUrl_('bug_report'),
+      action: 'emptyLogRecords',
     }),
     playground1Widget: createActionWidget_({
       title: 'Playground 1',
@@ -99,11 +36,60 @@ namespace Views {
       iconUrl: buildIconUrl_('looks_3'),
       action: 'playground3',
     }),
-    createNamedRangesFromSheetWidget: createActionWidget_({
-      title: 'Create Sheet Named Ranges',
-      description: 'sheetName.columnName + sheetName',
-      iconUrl: buildIconUrl_('burst_mode'),
-      action: 'createNamedRangesFromSheet',
+    helpWidget: createActionWidget_({
+      title: 'Click here and then any command',
+      description:
+        'Get help on any button by first clicking this icon and then click the other button to see a description.',
+      iconUrl: buildIconUrl_('help_outline'),
+      action: 'prepareForHelp',
+    }),
+    cropToSelectionWidget: createActionWidget_({
+      title: 'Crop to Selection',
+      description: 'Crop sheet rows and columns down to selected range',
+      iconUrl: buildIconUrl_('crop_square'),
+      action: 'cropToSelection',
+    }),
+    cropToDataWidget: createActionWidget_({
+      title: 'Crop to Data',
+      description: 'Crop sheet rows and columns down to data range',
+      iconUrl: buildIconUrl_('crop'),
+      action: 'cropToData',
+    }),
+    setBackgroundsUsingCellValuesWidget: createActionWidget_({
+      title: 'Set Backgrounds Using Values',
+      description: 'Set background color using cell value',
+      iconUrl: buildIconUrl_('brush'),
+      action: 'setBackgroundsColorsUsingValues',
+    }),
+    getBackgroundColorToValuesWidget: createActionWidget_({
+      title: 'Get Background Colors To Values',
+      description: 'Put HEX value in cells',
+      iconUrl: buildIconUrl_('colorize'),
+      action: 'getBackgroundColorsToValues',
+    }),
+    getBackgroundColorToNotesWidget: createActionWidget_({
+      title: 'Get Background Colors To Notes',
+      description: 'Put HEX and RGB info in notes',
+      iconUrl: buildIconUrl_('palette'),
+      action: 'getBackgroundColorsToNotes',
+    }),
+    squareSelectedCellsWidget: createActionWidget_({
+      title: 'Square the selected cells',
+      description: 'Give same width/height to selected cells',
+      iconUrl: buildIconUrl_('view_module'),
+      action: 'squareSelectedCells',
+    }),
+    createSheetOfTogglesWidget: createActionWidget_({
+      title: 'Create toggles sheet',
+      description: 'Create a sheet of colored toggle checkboxes',
+      iconUrl: buildIconUrl_('apps'),
+      action: 'createSheetWithToggleButtons',
+    }),
+    createStatsDashboardWidget: createActionWidget_({
+      title: 'Create Stats Dashboard',
+      description: 'Get sheet utilization and formulas',
+      iconUrl: buildIconUrl_('poll'),
+      action: 'createStatsDashboard',
     }),
     createNamedRangesDashboardWidget: createActionWidget_({
       title: 'Create Named Ranges Dashboard',
@@ -112,28 +98,114 @@ namespace Views {
       action: 'createNamedRangesDashboard',
     }),
     updateNamedRangesDashboardWidget: createActionWidget_({
-      title: 'Update list',
+      title: 'Update Named Ranges Dashboard',
       description: 'Update named ranges',
       iconUrl: buildIconUrl_('update'),
       action: 'updateNamedRangeSheet',
     }),
-    createStatsDashboardWidget: createActionWidget_({
-      title: 'Create Stats Dashboard',
-      description: 'Get sheet utilization and formulas',
-      iconUrl: buildIconUrl_('poll'),
-      action: 'createStatsDashboard',
-    }),
-    emptyLogRecordsWidget: createActionWidget_({
-      title: 'Empty logs',
-      description: 'Empty cached log records',
-      iconUrl: buildIconUrl_('bug_report'),
-      action: 'emptyLogRecords',
-    }),
     showNamedFunctionsDashboardWidget: createActionWidget_({
-      title: 'Named Functions Dashboard',
+      title: 'Create Named Functions Dashboard',
       description: 'Show/create named functions dashboard',
       iconUrl: buildIconUrl_('loyalty'),
       action: 'showNamedFunctionsDashboard',
+    }),
+    createNamedRangesFromSheetWidget: createActionWidget_({
+      title: 'Create Named Ranges Using Current Sheet',
+      description: 'sheetName.columnName + sheetName',
+      iconUrl: buildIconUrl_('burst_mode'),
+      action: 'createNamedRangesFromSheet',
+    }),
+    showFormulaWidget: createActionWidget_({
+      title: 'Show Formula Down Below',
+      altText: '',
+      description: 'Shows formula in cell directly below or two below',
+      iconUrl: buildIconUrl_('functions'),
+      action: 'showFormula',
+    }),
+    makeRangeStaticWidget: createActionWidget_({
+      title: 'Make range static',
+      description: 'Convert selected formulas to values, save to notes',
+      iconUrl: buildIconUrl_('lock'),
+      action: 'makeRangeStatic',
+    }),
+    makeRangeDynamicWidget: createActionWidget_({
+      title: 'Make range dynamic',
+      iconUrl: buildIconUrl_('lock_open'),
+      description: 'Restore selected note formulas',
+      action: 'makeRangeDynamic',
+    }),
+    makeSheetStaticWidget: createActionWidget_({
+      title: 'Make sheet static',
+      description: 'Convert all formulas to values, save to notes',
+      iconUrl: buildIconUrl_('lock'),
+      action: 'makeSheetsStatic',
+      parameters: { use: 'current' },
+    }),
+    makeSheetDynamicWidget: createActionWidget_({
+      title: 'Make sheet dynamic',
+      description: 'Restore all note formulas',
+      iconUrl: buildIconUrl_('lock_open'),
+      action: 'makeSheetsDynamic',
+      parameters: { use: 'current' },
+    }),
+    makeAllSheetsStaticWidget: createActionWidget_({
+      title: 'Make all sheets static',
+      description:
+        'Convert all formulas on all sheets to values, save in notes',
+      iconUrl: buildIconUrl_('lock'),
+      action: 'makeSheetsStatic',
+      parameters: { use: 'all' },
+    }),
+    makeAllSheetsDynamicWidget: createActionWidget_({
+      title: 'Restore formulas for all sheets',
+      description: 'Restore all note formulas on all sheets',
+      iconUrl: buildIconUrl_('lock_open'),
+      action: 'makeSheetsDynamic',
+      parameters: { use: 'all' },
+    }),
+    makeSheetListStaticWidget: createActionWidget_({
+      title: 'Make sheet name list static',
+      description:
+        'Convert all formulas on selected sheet names to values, save in notes',
+      iconUrl: buildIconUrl_('lock'),
+      action: 'makeSheetsStatic',
+      parameters: { use: 'list' },
+    }),
+    makeSheetListDynamicWidget: createActionWidget_({
+      title: 'Make sheet name list dynamic',
+      description: 'Restore all note formulas on selected sheet names',
+      iconUrl: buildIconUrl_('lock_open'),
+      action: 'makeSheetsDynamic',
+      parameters: { use: 'list' },
+    }),
+    makeRangeStaticNoNotesWidget: createActionWidget_({
+      title: 'Make range static, no notes',
+      description:
+        'Convert all formulas in selected range to values. May affect array formulas above range',
+      iconUrl: buildIconUrl_('lock'),
+      action: 'makeRangeStatic',
+      parameters: { noNotes: 'true' },
+    }),
+    makeSheetStaticNoNotesWidget: createActionWidget_({
+      title: 'Make sheet static, no notes',
+      description: 'Convert all formulas to values',
+      iconUrl: buildIconUrl_('lock'),
+      action: 'makeSheetsStatic',
+      parameters: { use: 'current', noNotes: 'true' },
+    }),
+    makeAllSheetsStaticNoNotesWidget: createActionWidget_({
+      title: 'Make all sheets static, no notes',
+      description: 'Convert all formulas on all sheets to values',
+      iconUrl: buildIconUrl_('lock'),
+      action: 'makeSheetsStatic',
+      parameters: { use: 'all', noNotes: 'true' },
+    }),
+    makeSheetListStaticNoNotesWidget: createActionWidget_({
+      title: 'Make sheet list static, no notes',
+      description: 'Convert all formulas on selected sheet names to values',
+      iconUrl: buildIconUrl_('lock'),
+      action: 'makeSheetsStatic',
+      parameters: { use: 'list', noNotes: 'true' },
     }),
     captionTopLeftWidget: createActionWidget_({
       title: '⭶',
@@ -191,25 +263,11 @@ namespace Views {
       action: 'formatAsCaption',
       parameters: { location: 'clear' },
     }),
-    showFormulaWidget: createActionWidget_({
-      title: 'Show Formula',
-      altText: '',
-      description: 'Shows formula in cell directly below or two below',
-      iconUrl: buildIconUrl_('functions'),
-      action: 'showFormula',
-    }),
     setTableFormatDefaultsWidget: createActionWidget_({
       title: 'Set as default',
       description: 'Sets current options as default.',
       iconUrl: buildIconUrl_('lock'),
       action: 'setTableFormatDefaults',
-    }),
-    cellSizeWidget: createFormElementWidget_({
-      title: 'Length of side (pixels)',
-      id: 'pixels',
-      text: {
-        multiLine: false,
-      },
     }),
   };
 
@@ -229,6 +287,26 @@ namespace Views {
         }),
       );
     });
+    return buttonSet;
+  };
+
+  const mpButtonSet = () => {
+    let buttonSet = CardService.newButtonSet();
+
+    ['#B30000', '#B36B00', '#00B300', '#0000B3', '#6B00B3', '#B300B3'].forEach(
+      (color) => {
+        buttonSet.addButton(
+          createActionIconButtonWidget_({
+            title: color,
+            iconUrl: `https://ui-avatars.com/api/?size=20&background=${color.slice(
+              1,
+            )}&color=${color.slice(1)}&rounded=true`,
+            action: 'formatRangeAsTable',
+            parameters: { color },
+          }),
+        );
+      },
+    );
     return buttonSet;
   };
 
@@ -265,6 +343,14 @@ namespace Views {
           .addButton(widgets.playground1Widget.asButtonIcon())
           .addButton(widgets.playground2Widget.asButtonIcon())
           .addButton(widgets.playground3Widget.asButtonIcon())
+          .addButton(
+            CardService.newImageButton()
+              .setAltText('Run onOpen')
+              .setOnClickAction(
+                CardService.newAction().setFunctionName('onOpen'),
+              )
+              .setIconUrl(buildIconUrl_('menu_open')),
+          )
           .addButton(widgets.helpWidget.asButtonIcon()),
       )
       .addWidget(DIVIDER)
@@ -295,17 +381,24 @@ namespace Views {
       .addWidget(widgets.getBackgroundColorToNotesWidget.asDecoratedText())
       .addWidget(DIVIDER)
       .addWidget(widgets.squareSelectedCellsWidget.asDecoratedText())
-      .addWidget(widgets.cellSizeWidget);
+      .addWidget(
+        createFormElementWidget_({
+          title: 'Length of side (pixels)',
+          id: 'pixels',
+          text: {
+            multiLine: false,
+          },
+        }),
+      );
 
     /* ------------------------------------------------- Color Table ------------------------------------------------ */
-
-    // var settings = Settings.getSettingsForUser();
 
     const tableFormatSection = CardService.newCardSection()
       .setHeader('TABLE FORMAT')
       .setCollapsible(true)
       .setNumUncollapsibleWidgets(1)
       .addWidget(cpButtonSet())
+      .addWidget(mpButtonSet())
       .addWidget(
         createFormElementWidget_({
           title: 'Table format options',
@@ -379,10 +472,33 @@ namespace Views {
       .addWidget(widgets.updateNamedRangesDashboardWidget.asDecoratedText())
       .addWidget(widgets.createNamedRangesFromSheetWidget.asDecoratedText())
       .addWidget(widgets.showFormulaWidget.asDecoratedText())
+      .addWidget(DIVIDER);
+
+    const staticSection = CardService.newCardSection()
+      .setHeader('STATIC/DYNAMIC')
+      .setCollapsible(true)
+      .setNumUncollapsibleWidgets(1)
+      .addWidget(
+        CardService.newButtonSet()
+          .addButton(widgets.makeRangeStaticWidget.asButtonIcon())
+          .addButton(widgets.makeRangeDynamicWidget.asButtonIcon())
+          .addButton(widgets.makeSheetStaticWidget.asButtonIcon())
+          .addButton(widgets.makeSheetDynamicWidget.asButtonIcon())
+          .addButton(widgets.makeSheetStaticNoNotesWidget.asButtonIcon()),
+      )
+      .addWidget(DIVIDER)
       .addWidget(widgets.makeRangeStaticWidget.asDecoratedText())
-      .addWidget(widgets.makeRangeDynamicWidget.asDecoratedText())
       .addWidget(widgets.makeSheetStaticWidget.asDecoratedText())
-      .addWidget(widgets.makeSheetDynamicWidget.asDecoratedText());
+      .addWidget(widgets.makeAllSheetsStaticWidget.asDecoratedText())
+      .addWidget(widgets.makeSheetListStaticWidget.asDecoratedText())
+      .addWidget(DIVIDER)
+      .addWidget(widgets.makeRangeDynamicWidget.asDecoratedText())
+      .addWidget(widgets.makeSheetDynamicWidget.asDecoratedText())
+      .addWidget(widgets.makeAllSheetsDynamicWidget.asDecoratedText())
+      .addWidget(widgets.makeSheetListDynamicWidget.asDecoratedText())
+      .addWidget(DIVIDER)
+      .addWidget(widgets.makeRangeStaticNoNotesWidget.asDecoratedText())
+      .addWidget(widgets.makeSheetStaticNoNotesWidget.asDecoratedText());
 
     const captionFormatSection = CardService.newCardSection()
       .setHeader('CAPTIONS')
@@ -414,15 +530,27 @@ namespace Views {
 
     /* --------------------------------------------- Build Final Card --------------------------------------------- */
     const toolsCard = CardService.newCardBuilder()
-      .setHeader(CardService.newCardHeader().setTitle('GAS Tools'))
-      .addSection(logPlaygroundSection)
+      .setHeader(
+        CardService.newCardHeader()
+          .setTitle(SpreadsheetApp.getActive().getName())
+          .setSubtitle(getActiveInfoStr()),
+      )
       .addSection(cropsAndColorsSection)
       .addSection(tableFormatSection)
+      .addSection(staticSection)
       .addSection(dashboardsSection)
       .addSection(captionFormatSection)
+      .addSection(logPlaygroundSection)
       .build();
 
     return toolsCard;
+  }
+
+  function getActiveInfoStr() {
+    const activeSheetName = SpreadsheetApp.getActiveSheet().getName();
+    const activeRangeA1Notation =
+      SpreadsheetApp.getActiveRange().getA1Notation();
+    return `activeSheet: ${activeSheetName}, activeRange: ${activeRangeA1Notation}`;
   }
 
   /**
@@ -489,43 +617,34 @@ namespace Views {
    * @param {string} opts.helpControl
    * @return {Card}
    */
-  export function buildSettingsCard() {
-    const bordersThicknessWidget = createFormElementWidget_({
-      title: 'Border thickness',
-      id: 'bordersThickness',
-      dropdown: {
-        choices: [
-          ['Solid', 1],
-          ['Medium', 2],
-          ['Thick', 3],
-        ],
-        defaultChoice: g.UserSettings.bordersThickness || 1,
-      },
+  export function buildSettingsCard(opts: SettingsOptions) {
+    console.log('opts :>> ', opts);
+    const builder = CardService.newCardBuilder();
+
+    builder.setHeader(
+      CardService.newCardHeader().setTitle(
+        SpreadsheetApp.getActive().getName(),
+      ),
+    );
+
+    const bordersThicknessWidget = CardService.newSelectionInput()
+      .setTitle('Border thickness')
+      .setFieldName('bordersThickness')
+      .setType(CardService.SelectionInputType.DROPDOWN);
+
+    [
+      ['Solid', 1],
+      ['Medium', 2],
+      ['Thick', 3],
+    ].forEach(([text, value]) => {
+      bordersThicknessWidget.addItem(
+        text,
+        value,
+        value == opts.bordersThickness,
+      );
     });
-    const debugSwitchWidget = CardService.newDecoratedText()
-      .setText('Debug')
-      .setBottomLabel('Toggle on to record actions')
-      .setSwitchControl(
-        CardService.newSwitch()
-          .setControlType(CardService.SwitchControlType.SWITCH)
-          .setFieldName('debugControl')
-          .setValue('ON')
-          .setSelected(g.UserSettings.debugControl === 'ON'),
-      );
 
-    const actionButtonsWidget = CardService.newButtonSet()
-      .addButton(
-        CardService.newTextButton()
-          .setText('Save')
-          .setOnClickAction(createAction_('saveSettings')),
-      )
-      .addButton(
-        CardService.newTextButton()
-          .setText('Reset to defaults')
-          .setOnClickAction(createAction_('resetSettings')),
-      );
-
-    var tableFormatSection = CardService.newCardSection()
+    const tableFormatSection = CardService.newCardSection()
       .setHeader('Table format preferences')
       .setCollapsible(true)
       .setNumUncollapsibleWidgets(0);
@@ -542,30 +661,66 @@ namespace Views {
       ['Title bottom border', 'bordersTitleBottom'],
       ['Headers bottom border', 'bordersHeadersBottom'],
       ['Headers vertical border', 'bordersHeadersVertical'],
-    ].forEach(([title, id]) =>
-      tableFormatSection.addWidget(
-        createFormElementWidget_({
-          title,
-          id,
-          dropdown: {
-            choices: [...new Array(25)].map((_, i) => [`${i + 1}`, i + 1]),
-            defaultChoice: g.UserSettings[id],
-          },
-        }),
-      ),
-    );
+    ].forEach(([title, id]) => {
+      const widget = CardService.newSelectionInput()
+        .setTitle(title)
+        .setFieldName(id)
+        .setType(CardService.SelectionInputType.DROPDOWN);
 
-    tableFormatSection.addWidget(bordersThicknessWidget);
+      [...new Array(25)]
+        .map((_, i) => [`${i + 1}`, i + 1])
+        .forEach(([text, value]) => {
+          widget.addItem(text, value, value == opts[id]);
+        });
+      tableFormatSection.addWidget(widget);
+    });
 
-    var actionSection = CardService.newCardSection()
-      .addWidget(debugSwitchWidget)
-      .addWidget(actionButtonsWidget);
-
-    return CardService.newCardBuilder()
-      .setHeader(CardService.newCardHeader().setTitle('Settings'))
+    builder
       .addSection(tableFormatSection)
-      .addSection(actionSection)
-      .build();
+      .addSection(
+        CardService.newCardSection()
+          .setHeader('Settings')
+          .setCollapsible(false)
+          .addWidget(bordersThicknessWidget),
+      );
+
+    const debugSwitchWidget = CardService.newDecoratedText()
+      .setText('Debug')
+      .setBottomLabel('Toggle on to record actions')
+      .setSwitchControl(
+        CardService.newSwitch()
+          .setControlType(CardService.SwitchControlType.SWITCH)
+          .setFieldName('debugControl')
+          .setValue('ON')
+          .setSelected(opts.debugControl === 'ON'),
+      );
+
+    const actionButtonsWidget = CardService.newButtonSet()
+      .addButton(
+        CardService.newTextButton()
+          .setText('Save')
+          .setOnClickAction(
+            CardService.newAction().setFunctionName(
+              'ActionHandlers.saveSettings',
+            ),
+          ),
+      )
+      .addButton(
+        CardService.newTextButton()
+          .setText('Reset to defaults')
+          .setOnClickAction(
+            CardService.newAction().setFunctionName(
+              'ActionHandlers.resetSettings',
+            ),
+          ),
+      );
+
+    const actionSection = CardService.newCardSection()
+      .addWidget(actionButtonsWidget)
+      .addWidget(debugSwitchWidget);
+
+    builder.addSection(actionSection);
+    return builder.build();
   }
 
   /**
@@ -592,7 +747,7 @@ namespace Views {
     var params: { action?: string } = Object.assign({}, optParams);
     params.action = name;
     return CardService.newAction()
-      .setFunctionName('dispatchAction')
+      .setFunctionName(`ActionHandlers.${name}`)
       .setParameters(params);
   }
 
@@ -613,7 +768,7 @@ namespace Views {
       .setBottomLabel(opts.description)
       .setOnClickAction(createAction_(opts.action, opts.parameters));
 
-    if (opts.iconUrl) {
+    if (false && opts.iconUrl) {
       let iconImage = CardService.newIconImage()
         .setIconUrl(opts.iconUrl)
         .setAltText(opts.title)
@@ -664,61 +819,6 @@ namespace Views {
     }
 
     return button;
-  }
-
-  /**
-   * Creates a drop down for selecting from a list of choices.
-   *
-   * @param label Top label of widget
-   * @param name Key used in form submits
-   * @param choices Array of choices to display in dropdown
-   * @param defaultChoice Default choice
-   * @return The selected choice
-   * @private
-   */
-  function createSelectDropdown_(
-    label: string,
-    name: string,
-    choices: any[][],
-    defaultChoice: any,
-  ): GoogleAppsScript.Card_Service.SelectionInput {
-    var widget = CardService.newSelectionInput()
-      .setTitle(label)
-      .setFieldName(name)
-      .setType(CardService.SelectionInputType.DROPDOWN);
-    for (var i = 0; i < choices.length; ++i) {
-      var text = choices[i][0];
-      var value = choices[i][1] || i;
-      widget.addItem(text, value, text == defaultChoice);
-    }
-    return widget;
-  }
-
-  /**
-   * Creates a drop down for selecting a time of day (hours only).
-   *
-   * @param label Top label of widget
-   * @param name Key used in form submits
-   * @param defaultValue Default duration to select (0-23)
-   * @return The selected time of day
-   * @private
-   */
-  function createIntegerSelectDropdown_(
-    label: string,
-    name: string,
-    start: number,
-    end: number,
-    defaultValue: number,
-  ): GoogleAppsScript.Card_Service.SelectionInput {
-    var widget = CardService.newSelectionInput()
-      .setTitle(label)
-      .setFieldName(name)
-      .setType(CardService.SelectionInputType.DROPDOWN);
-    for (var i = start; i < end; ++i) {
-      var text = `${i}`;
-      widget.addItem(text, i, i == defaultValue);
-    }
-    return widget;
   }
 
   function createFormElementWidget_(opts: {
@@ -787,9 +887,8 @@ namespace Views {
   /**
    * Creates an action that routes through the `dispatchAction` entry point.
    *
-   * @param name Action handler name
-   * @param optParams Additional parameters to pass through
-   * @return The action
+   * @param opts Parameters to pass through
+   * @return Object that can be either a text widget, icon button, or form element
    * @private
    */
   function createActionWidget_(opts: {

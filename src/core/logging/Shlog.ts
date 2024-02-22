@@ -1,4 +1,5 @@
 // @ts-ignore
+import { Settings } from '@core/environment/Settings';
 import { type Dayjs } from 'dayjs';
 // import { TicToc } from './types/addon'
 
@@ -61,6 +62,8 @@ namespace Shlog {
       error?: string;
     } = {},
   ): number {
+    const settings = Settings.getSettingsForUser();
+    console.log('settings :>> ', settings);
     DEPTH++;
     const start: Dayjs = daygs();
     const tictoc = {
@@ -305,7 +308,6 @@ namespace Shlog {
     ].join(' ');
 
     printTictocs_(`toc - ${tictoc.name}`);
-    // SpreadsheetApp.getActive().toast(message, `Completed...${options.label || tictoc.key || ''}`, 3)
     if (DEPTH === 0 || !!options.error) saveTicTocs_(tictoc);
 
     return options.result || true;

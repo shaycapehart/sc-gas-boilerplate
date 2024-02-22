@@ -326,7 +326,7 @@ namespace Utils {
     title: string = 'GV App',
     timeoutSeconds: number = 15,
   ) {
-    SpreadsheetApp.getActiveSpreadsheet().toast(message, title, timeoutSeconds);
+    g.ss.toast(message, title, timeoutSeconds);
   }
 
   /** Display alert box in center of screen

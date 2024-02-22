@@ -3,7 +3,8 @@ import { MP, COLORS } from '@core/lib/COLORS';
 import { SortType, TableFormatOptionsType } from '@core/types/addon';
 import { Utils } from '@core/utils/Utils';
 import { Views } from './Views';
-import { Shlog } from '@core/logging/Shlog';
+import { Shlog, TicToc } from '@core/logging/Shlog';
+import { Help } from '@core/lib/Help';
 
 /**
  * Collection of functions to handle user interactions with the add-on.
@@ -12,7 +13,7 @@ import { Shlog } from '@core/logging/Shlog';
  */
 namespace ActionHandlers {
   /* -------------------------------------------------- Empty Logs -------------------------------------------------- */
-  export function emptyLogRecords() {
+  export function emptyLogRecords(): GoogleAppsScript.Card_Service.ActionResponse {
     const newLogsCount = Shlog.outputTictocs();
 
     return CardService.newActionResponseBuilder()
@@ -31,6 +32,7 @@ namespace ActionHandlers {
     rng: GoogleAppsScript.Spreadsheet.Range,
     options: TableFormatOptionsType,
   ) {
+    const tictoc = Shlog.tic('tableFormat');
     const {
       color,
       hasTitle,
@@ -144,10 +146,13 @@ namespace ActionHandlers {
       PALLETE.BORDERS_VERTICAL,
       SOLID,
     );
+
+    return Shlog.toc(tictoc);
   }
   export function setTableFormatDefaults(
     e: GoogleAppsScript.Addons.EventObject,
-  ) {
+  ): GoogleAppsScript.Card_Service.ActionResponse {
+    const tictoc = Shlog.tic('setTableFormatDefaults');
     const tableOptions: string[] =
       e.commonEventObject.formInputs?.tableOptions?.stringInputs?.value || [];
     var settings = {
@@ -163,29 +168,28 @@ namespace ActionHandlers {
     };
 
     Settings.updateSettingsForUser(settings);
-    return CardService.newActionResponseBuilder()
-      .setNavigation(CardService.newNavigation().popCard())
-      .setNotification(
-        CardService.newNotification().setText('Defaults updated'),
-      )
-      .build();
+    return finished(`Table format options updated`, tictoc);
   }
   export function formatRangeAsTable(
-    rng: GoogleAppsScript.Spreadsheet.Range,
-    options: TableFormatOptionsType,
+    e: GoogleAppsScript.Addons.EventObject,
+    range?: GoogleAppsScript.Spreadsheet.Range,
   ) {
-    const {
-      color,
-      hasTitle,
-      hasHeaders,
-      leaveTop,
-      leaveLeft,
-      leaveBottom,
-      noBottom,
-      centerAll,
-      alternating,
-      hasFooter,
-    } = options;
+    const tictoc = Shlog.tic('formatRangeAsTable');
+    const rng = range || g.ActiveRange;
+    const tableOptions: string[] =
+      e.commonEventObject.formInputs?.tableOptions?.stringInputs?.value || [];
+
+    const color = e.commonEventObject.parameters.color,
+      hasTitle = tableOptions.includes('hasTitle'),
+      hasHeaders = tableOptions.includes('hasHeaders'),
+      leaveTop = tableOptions.includes('leaveTop'),
+      leaveLeft = tableOptions.includes('leaveLeft'),
+      leaveBottom = tableOptions.includes('leaveBottom'),
+      noBottom = tableOptions.includes('noBottom'),
+      centerAll = tableOptions.includes('centerAll'),
+      alternating = tableOptions.includes('alternating'),
+      hasFooter = tableOptions.includes('hasFooter');
+
     const title = Number(hasTitle);
     const headers = Number(hasHeaders);
     const OFF_WHITE = '#FCFCFC';
@@ -324,9 +328,12 @@ namespace ActionHandlers {
       PALLETE.BORDERS_VERTICAL,
       SOLID,
     );
+
+    return finished(`Successful formatted the table`, tictoc);
   }
 
   export function squareSelectedCells(e: GoogleAppsScript.Addons.EventObject) {
+    const tictoc = Shlog.tic('squareSelectedCells');
     console.log('e :>> ', e);
     console.log(
       'e.commonEventObject.formInputs :>> ',
@@ -344,9 +351,12 @@ namespace ActionHandlers {
       nCols,
       pixels,
     );
+
+    return finished(`Successful squared off the selected cells`, tictoc);
   }
 
   export function formatTable(e: GoogleAppsScript.Addons.EventObject) {
+    const tictoc = Shlog.tic('formatTable');
     const tableOptions: string[] =
       e.commonEventObject.formInputs?.tableOptions?.stringInputs?.value || [];
 
@@ -362,31 +372,40 @@ namespace ActionHandlers {
       centerAll: tableOptions.includes('centerAll'),
       alternating: tableOptions.includes('alternating'),
     });
+
+    return finished(`Successful completed formatTable`, tictoc);
   }
 
   /**
    * Crops the current sheet to the user's selection.
    */
   export function cropToSelection() {
+    const tictoc = Shlog.tic('cropToSelection');
     console.log('Cropping to selection');
     var range = g.ActiveRange;
     cropToRange_(range);
+
+    return finished(`Successful cropped to selection`, tictoc);
   }
   /* ------------------------------------------------- Crop to Data ------------------------------------------------- */
   /**
    * Crops the current sheet to the data.
    */
   export function cropToData() {
+    const tictoc = Shlog.tic('cropToData');
     console.log('Cropping to data');
     var range = g.ActiveSheet.getDataRange();
     cropToRange_(range);
+
+    return finished(`Successful cropped to data`, tictoc);
   }
   /* ------------------------------------------------- Crop to Range ------------------------------------------------ */
   /**
    * Crops the sheet such that it only contains the given range.
-   * @param {SpreadsheetApp.Range} range The range to crop to.
+   * @param {GoogleAppsScript.Spreadsheet.Range} range The range to crop to.
    */
   export function cropToRange_(range) {
+    const tictoc = Shlog.tic('cropToRange_');
     var sheet = range.getSheet();
     var spreadsheet = sheet.getParent();
     var firstRow = range.getRow();
@@ -409,9 +428,12 @@ namespace ActionHandlers {
       sheet.deleteColumns(1, firstColumn - 1);
     }
     sheet.getRange(1, 1, sheet.getMaxRows(), sheet.getMaxColumns()).activate();
+
+    return Shlog.toc(tictoc);
   }
 
   function getRangeType_(range: GoogleAppsScript.Spreadsheet.Range): string {
+    const tictoc = Shlog.tic('getRangeType_');
     const typeRegex = /([a-zA-Z]*)(\d*)(:?)([a-zA-Z]*)(\d*)/;
     const a1Notation = range.getA1Notation();
     const matches = typeRegex.exec(a1Notation);
@@ -427,7 +449,7 @@ namespace ActionHandlers {
       : n1 === n2
       ? 'row'
       : 'range';
-    return type;
+    return Shlog.toc(tictoc) && type;
   }
   /* ------------------------------------------------- Import Range ------------------------------------------------- */
   /**
@@ -443,6 +465,7 @@ namespace ActionHandlers {
     destinationID: string,
     destinationRangeStart: string,
   ) {
+    const tictoc = Shlog.tic('importRange');
     // Gather the source range values
     const sourceSS = SpreadsheetApp.openById(sourceID);
     const sourceRng = sourceSS.getRange(sourceRange);
@@ -479,6 +502,8 @@ namespace ActionHandlers {
       );
 
     SpreadsheetApp.flush();
+
+    return Shlog.toc(tictoc);
   }
 
   export function sortRange(
@@ -486,13 +511,16 @@ namespace ActionHandlers {
     range: string,
     sortParams: SortType[],
   ) {
+    const tictoc = Shlog.tic('sortRange');
     if (sortParams.length % 2 !== 0) return;
     const ss = SpreadsheetApp.openById(ssid);
     const rng = ss.getRange(range);
     rng.sort(sortParams);
+    return Shlog.toc(tictoc);
   }
 
   export function getNamedFunctions() {
+    const tictoc = Shlog.tic('getNamedFunctions');
     const url = `https://docs.google.com/spreadsheets/export?exportFormat=xlsx&id=${g.ss.getId()}`;
     const resHttp = UrlFetchApp.fetch(url, {
       headers: { authorization: 'Bearer ' + ScriptApp.getOAuthToken() },
@@ -548,11 +576,12 @@ namespace ActionHandlers {
             definedFunction,
           ]),
       ]);
-
+    return finished(`Successful retrieved named functions`, tictoc);
     // DriveApp.getFiles(); // This comment line is used for automatically detecting the scope of Drive API.
   }
 
-  export function createNamedRangesDashboard() {
+  export function createNamedRangesDashboard(): GoogleAppsScript.Card_Service.ActionResponse {
+    const tictoc = Shlog.tic('createNamedRangesDashboard');
     let namedRanges = g.ss.getNamedRanges();
     let sheet: GoogleAppsScript.Spreadsheet.Sheet,
       range: GoogleAppsScript.Spreadsheet.Range;
@@ -583,9 +612,21 @@ namespace ActionHandlers {
         `Optional`,
       ];
 
+      const sheetIcons = ['range', 'cell', 'table', 'row', 'col'].map(
+        (n) =>
+          `=image("https://shaycapehart.github.io/web-host-files/data${n}.jpg")`,
+      );
+
+      sheet.getRange('K1:O1').setValues([sheetIcons]);
+      sheet.hideColumns(11, 5);
+
       sheet
         .setHiddenGridlines(true)
-        .setColumnWidths(1, 4, 200)
+        .setColumnWidths(1, 1, 200)
+        .setColumnWidths(2, 1, 100)
+        .setColumnWidths(3, 1, 200)
+        .setColumnWidths(4, 1, 400)
+        .setColumnWidths(5, 1, 65)
         .setColumnWidths(8, 3, 200);
 
       sheet
@@ -594,8 +635,8 @@ namespace ActionHandlers {
         .offset(0, 7, 1, 3)
         .setNotes([notes]);
 
-      if (sheet.getMaxColumns() > 10)
-        sheet.deleteColumns(11, sheet.getMaxColumns() - 10);
+      if (sheet.getMaxColumns() > 15)
+        sheet.deleteColumns(16, sheet.getMaxColumns() - 15);
       sheet.setFrozenRows(1);
       sheet.setFrozenColumns(1);
     } else {
@@ -610,6 +651,7 @@ namespace ActionHandlers {
     const richTextValues = [];
 
     const rows = [];
+
     namedRanges.forEach((nr) => {
       const name = nr.getName();
       const range = nr.getRange();
@@ -618,84 +660,104 @@ namespace ActionHandlers {
       const a1Notation = range.getA1Notation();
       const url = `${baseUrl}${sheetId}&range=${a1Notation}`;
       richTextValues.push([
-        SpreadsheetApp.newRichTextValue().setText(name).setLinkUrl(url).build(),
+        SpreadsheetApp.newRichTextValue()
+          .setText(name.replaceAll(`'`, ''))
+          .setLinkUrl(url)
+          .build(),
       ]);
       const typeRegex = /([a-zA-Z]*)(\d*)(:?)([a-zA-Z]*)(\d*)/;
       const matches = typeRegex.exec(a1Notation);
       const [all, a1, n1, sep, a2, n2] = matches;
       const type = !sep
-        ? 'cell'
+        ? 2
         : !n1 && !n2
         ? a1 === a2
-          ? 'column'
-          : 'table'
+          ? 5
+          : 3
         : !n1 || !n2
-        ? 'range'
+        ? 1
         : n1 === n2
-        ? 'row'
-        : 'range';
-      rows.push([a1Notation, sheetName, `'${sheetName}'!${a1Notation}`, type]);
+        ? 4
+        : 1;
+
+      rows.push([
+        a1Notation,
+        sheetName,
+        `="'${sheetName}'!${a1Notation}"`,
+        `=index($K$1:$O$1,${type})`,
+      ]);
     });
 
-    if (sheet.getMaxRows() > rows.length + 1)
-      sheet.deleteRows(rows.length + 2, sheet.getMaxRows() - (rows.length + 1));
-    sheet.getRange(`A2:A${rows.length + 1}`).setRichTextValues(richTextValues);
-    sheet.getRange(`B2:E${rows.length + 1}`).setValues(rows);
+    if (rows.length) {
+      if (sheet.getMaxRows() > rows.length + 1) {
+        sheet.deleteRows(
+          rows.length + 2,
+          sheet.getMaxRows() - (rows.length + 1),
+        );
+      }
+      sheet
+        .getRange(`A2:A${rows.length + 1}`)
+        .setRichTextValues(richTextValues);
+      sheet.getRange(`B2:E${rows.length + 1}`).setValues(rows);
+      sheet.getRange(`E2:E${rows.length + 1}`).setHorizontalAlignment('center');
 
-    sheet.getRange(`A2:E${rows.length + 1}`).sort([
-      { column: 3, ascending: true },
-      { column: 5, ascending: false },
-      { column: 2, ascending: true },
-    ]);
+      sheet.getRange(`A2:E${rows.length + 1}`).sort([
+        { column: 3, ascending: true },
+        { column: 5, ascending: false },
+        { column: 2, ascending: true },
+      ]);
 
-    sheet
-      .getRange(`F2:G${rows.length + 1}`)
-      .setDataValidation(
-        SpreadsheetApp.newDataValidation()
-          .setAllowInvalid(true)
-          .requireCheckbox()
-          .build(),
-      );
+      sheet
+        .getRange(`F2:G${rows.length + 1}`)
+        .setDataValidation(
+          SpreadsheetApp.newDataValidation()
+            .setAllowInvalid(true)
+            .requireCheckbox()
+            .build(),
+        );
+      sheet.setRowHeights(2, rows.length, 60);
+      tableFormat(sheet.getDataRange(), {
+        color: 'BLUE',
+        hasTitle: false,
+        hasHeaders: true,
+        centerAll: false,
+        alternating: false,
+      });
+    }
 
-    tableFormat(sheet.getDataRange(), {
-      color: 'BLUE',
-      hasTitle: false,
-      hasHeaders: true,
-      centerAll: false,
-      alternating: false,
-    });
-
-    return CardService.newActionResponseBuilder()
-      .setNotification(
-        CardService.newNotification().setText(`Built fresh Named Ranges sheet`),
-      )
-      .build();
+    return finished(`Build fresh named ranges dashboard`, tictoc);
   }
 
-  export function updateNamedRangeSheet() {
+  export function updateNamedRangeSheet(): GoogleAppsScript.Card_Service.ActionResponse {
+    const tictoc = Shlog.tic('updateNamedRangeSheet');
     let namedRanges = g.ss.getNamedRanges();
     let rows: any[][];
     let nrS = g.ss.getSheetByName('__named_ranges__');
     if (!nrS) return createNamedRangesDashboard();
 
     rows = nrS.getDataRange().getValues().slice(1);
-    rows
-      .filter((row) => !!row[5]) // Filter rows to delete
-      .forEach((row) => {
+    // check for delete items
+    rows.forEach((row, i, arr) => {
+      if (!!arr[arr.length - 1 - i][5]) {
         try {
           const nr = namedRanges.find(
-            (namedRange) => namedRange.getName() === row[0],
+            (namedRange) =>
+              namedRange.getName().replaceAll(`'`, '') ===
+              arr[arr.length - 1 - i][0],
           );
           nr.remove();
         } catch (error) {
           Utils.displayError(
-            `Problem deleting ${row[0]} named range: ${error}`,
+            `Problem deleting ${
+              arr[arr.length - 1 - i][0]
+            } named range: ${error}`,
           );
         }
-      });
-    rows
-      .filter((row) => !!row[6]) // Filter rows to update
-      .forEach((row) => {
+      }
+    });
+    // check for edit items
+    rows.forEach((row, i, arr) => {
+      if (!!arr[arr.length - 1 - i][6]) {
         const [
           nrName,
           nrA1,
@@ -707,35 +769,70 @@ namespace ActionHandlers {
           newName,
           newRangeA1,
           newSheetName,
-        ] = row;
-        console.log('Edit row :>> ', row);
+        ] = arr[arr.length - 1 - i];
+        console.log('Edit row :>> ', arr[arr.length - 1 - i]);
+        console.log(
+          'nrName >> ',
+          nrName,
+          'nrA1 >> ',
+          nrA1,
+          'nrSheetName >> ',
+          nrSheetName,
+          'nrFull >> ',
+          nrFull,
 
+          'nrType >> ',
+          nrType,
+
+          'nrDelete >> ',
+          nrDelete,
+
+          'nrUpdate >> ',
+          nrUpdate,
+
+          'newName >> ',
+          newName,
+
+          'newRangeA1 >> ',
+          newRangeA1,
+
+          'newSheetName >> ',
+          newSheetName,
+        );
+        const cleanNr = nrName.replace(/^.*!/, '');
         try {
           const existingNr = namedRanges.find(
-            (namedRange) => namedRange.getName() === nrName,
+            (namedRange) => namedRange.getName().replaceAll(`'`, '') === nrName,
           );
           const namedRangeRangeA1 = `'${newSheetName || nrSheetName}'!${
             newRangeA1 || nrA1
           }`;
           const namedRangeName = `${newName || nrName}`;
+          console.log('namedRangeName :>> ', namedRangeName);
           existingNr.setName(namedRangeName);
           existingNr.setRange(g.ss.getRange(namedRangeRangeA1));
 
           g.ss
             .getNamedRanges()
-            .find((nr) => nr.getName() === namedRangeName)
+            .find(
+              (nr) =>
+                nr.getName().replaceAll(`'`, '') ===
+                namedRangeName.replaceAll(`'`, ''),
+            )
             .setRange(g.ss.getRange(namedRangeRangeA1));
         } catch (error) {
           Utils.displayError(
             `Problem modifying ${newName || nrName} named range.`,
           );
         }
-      });
+      }
+    });
 
-    return createNamedRangesDashboard();
+    return Shlog.toc(tictoc) && createNamedRangesDashboard();
   }
 
   export function createNamedFunctionsDashboard(): GoogleAppsScript.Spreadsheet.Sheet {
+    const tictoc = Shlog.tic('createNamedFunctionsDashboard');
     const headers = [
       [
         'Defined Name',
@@ -748,8 +845,8 @@ namespace ActionHandlers {
       range: GoogleAppsScript.Spreadsheet.Range;
 
     SHEET =
-      SpreadsheetApp.getActive().getSheetByName('__named_functions__') ||
-      SpreadsheetApp.getActive().insertSheet('__named_functions__');
+      g.ss.getSheetByName('__named_functions__') ||
+      g.ss.insertSheet('__named_functions__');
 
     range = SHEET.clear()
       .setHiddenGridlines(true)
@@ -766,11 +863,12 @@ namespace ActionHandlers {
     SHEET.setFrozenRows(1);
     SHEET.setFrozenColumns(1);
 
-    return SHEET;
+    return Shlog.toc(tictoc) && SHEET;
   }
   /* ---------------------------------------- Show Named Functions Dashboard ---------------------------------------- */
-  export function showNamedFunctionsDashboard() {
-    const url = `https://docs.google.com/spreadsheets/export?exportFormat=xlsx&id=${SpreadsheetApp.getActive().getId()}`;
+  export function showNamedFunctionsDashboard(): GoogleAppsScript.Card_Service.ActionResponse {
+    const tictoc = Shlog.tic('showNamedFunctionsDashboard');
+    const url = `https://docs.google.com/spreadsheets/export?exportFormat=xlsx&id=${g.ss.getId()}`;
     const resHttp = UrlFetchApp.fetch(url, {
       headers: { authorization: 'Bearer ' + ScriptApp.getOAuthToken() },
     });
@@ -864,15 +962,9 @@ namespace ActionHandlers {
       alternating: false,
     });
 
-    return CardService.newActionResponseBuilder()
-      .setNotification(
-        CardService.newNotification().setText(
-          `Successful refresh of named functions sheet`,
-        ),
-      )
-      .build();
+    return finished(`Successful refreshed named functions`, tictoc);
   }
-  export function createSheetWithToggleButtons() {
+  export function createSheetWithToggleButtons(): GoogleAppsScript.Card_Service.ActionResponse {
     const tictoc = Shlog.tic('createSheetWithToggleButtons');
     const sheet = (
       g.ss.getSheetByName('Color Toggles') || g.ss.insertSheet('Color Toggles')
@@ -884,7 +976,7 @@ namespace ActionHandlers {
     console.log('pallete :>> ', pallete);
     const start = 1;
     const gap = 1;
-    const range = sheet.getRange(5, 5, 18, 20 - gap - start + 1);
+    const range = sheet.getRange(5, 5, 10, 18 - gap - start + 1);
     range
       .insertCheckboxes()
       .setBorder(
@@ -898,8 +990,8 @@ namespace ActionHandlers {
         SpreadsheetApp.BorderStyle.SOLID_MEDIUM,
       );
 
-    for (let i = 0; i < 18; i += 1) {
-      for (let j = 1; j <= 20 - gap; j += 1) {
+    for (let i = 0; i < 10; i += 1) {
+      for (let j = 1; j <= 18 - gap; j += 1) {
         const cell = sheet.getRange(5 + i, 5 - start + j);
         const activeHex = pallete[i][2];
         const passiveHex = pallete[i][j + gap];
@@ -932,21 +1024,16 @@ namespace ActionHandlers {
     }
 
     sheet
-      .setColumnWidths(5, 20 - gap - start + 1, 20)
+      .setColumnWidths(5, 18 - gap - start + 1, 20)
       .setConditionalFormatRules(activeRules);
 
-    return (
-      Shlog.toc(tictoc) &&
-      CardService.newActionResponseBuilder()
-        .setNotification(
-          CardService.newNotification().setText(
-            `Finished creating the toggle sheet. Delete it when finished.`,
-          ),
-        )
-        .build()
+    return finished(
+      `Finished creating the toggle sheet. Delete it when finished.`,
+      tictoc,
     );
   }
   export function getAllFormulas() {
+    const tictoc = Shlog.tic('getAllFormulas');
     const tempS = g.ss.insertSheet('temp');
     const sheets = g.ss
       .getSheets()
@@ -986,10 +1073,11 @@ namespace ActionHandlers {
         if (values[i][j]) pagesData.push([null, `'${values[i][j]}`]);
       }
     }
-    return pagesData;
+    return Shlog.toc(tictoc) && pagesData;
   }
 
   export function createStatsDashboard() {
+    const tictoc = Shlog.tic('createStatsDashboard');
     // leave these two variables as is
     const TEMPLATE_SSID = '1vmgmyaphx9dcIbcnbK0mNwVWE7qHOflf975mEOgJm14';
     const PLAIN_SHEETNAME = '__stats__';
@@ -1000,7 +1088,7 @@ namespace ActionHandlers {
 
     const ui = SpreadsheetApp.getUi();
     const ssidResponse = ui.prompt(
-      'Enter the destination SSID',
+      'Enter the destination SSID (leave blank and hit ok to use current sheet)',
       ui.ButtonSet.OK_CANCEL,
     );
 
@@ -1014,7 +1102,7 @@ namespace ActionHandlers {
 
     const destSS = ssidResponse.getResponseText()
       ? SpreadsheetApp.openById(ssidResponse.getResponseText())
-      : SpreadsheetApp.getActive();
+      : g.ss;
 
     if (destSS.getSheetByName(DESTINATION_SHEETNAME))
       destSS.deleteSheet(destSS.getSheetByName(DESTINATION_SHEETNAME));
@@ -1041,10 +1129,13 @@ namespace ActionHandlers {
     );
 
     SpreadsheetApp.flush();
+
+    return finished(`Successful created stats dashboard`, tictoc);
   }
 
   /* --------------------------------------------- Get Background Colors -------------------------------------------- */
   export function getBackgroundColorsToNotes() {
+    const tictoc = Shlog.tic('getBackgroundColorsToNotes');
     const backgrounds = g.ActiveRange.getBackgrounds();
     const notes = backgrounds.map((r) =>
       r.map((v) => {
@@ -1058,13 +1149,17 @@ namespace ActionHandlers {
       }),
     );
     g.ActiveRange.setNotes(notes);
+    return finished(`Successful backgrounds to notes`, tictoc);
   }
 
   export function getBackgroundColorsToValues() {
+    const tictoc = Shlog.tic('getBackgroundColorsToValues');
     g.ActiveRange.setValues(g.ActiveRange.getBackgrounds());
+    return finished(`Successfully retrieved background colors`, tictoc);
   }
   /* -------------------------------------- Set Background Colors Using Values -------------------------------------- */
   export function setBackgroundsColorsUsingValues() {
+    const tictoc = Shlog.tic('setBackgroundsColorsUsingValues');
     const formulas = g.ActiveRange.getFormulas();
     const values = g.ActiveRange.getValues();
     g.ActiveRange.setBackgrounds(
@@ -1084,14 +1179,17 @@ namespace ActionHandlers {
         );
       }
     }
+
+    return finished(`Successfully set backgrounds using vals`, tictoc);
   }
 
-  export function showFileScopeRequestCard() {
+  export function showFileScopeRequestCard(): GoogleAppsScript.Card_Service.Card[] {
     let card = Views.buildFileScopeRequestCard();
     return [card];
   }
 
-  export function shiftFormulaDown() {
+  export function shiftFormulaDown(): GoogleAppsScript.Card_Service.ActionResponse {
+    const tictoc = Shlog.tic('shiftFormulaDown');
     const headerCell = g.ActiveSheet.getRange(
       1,
       g.ActiveRange.getColumn(),
@@ -1106,23 +1204,34 @@ namespace ActionHandlers {
     staticRange.setValues(staticRange.getDisplayValues());
     g.ActiveRange.setFormula(formula);
 
-    return CardService.newActionResponseBuilder()
-      .setNotification(
-        CardService.newNotification().setText(`Finished shifting down formula`),
-      )
-      .build();
+    return finished(`Successfully shifted formula down`, tictoc);
   }
 
   /**
    * Shows the user settings card.
+   * @param {Event} e - Event from Gmail
    * @return {UniversalActionResponse}
    */
-  export function showSettings(
-    e: GoogleAppsScript.Addons.EventObject,
-  ): GoogleAppsScript.Card_Service.UniversalActionResponse {
-    // var settings = Settings.getSettingsForUser();
-    var card = Views.buildSettingsCard();
-
+  export function showSettings(e) {
+    console.log('e :>> ', e);
+    var settings = Settings.getSettingsForUser();
+    console.log('settings :>> ', settings);
+    var card = Views.buildSettingsCard({
+      backgroundTitle: settings.backgroundTitle,
+      backgroundHeaders: settings.backgroundHeaders,
+      backgroundDataFirst: settings.backgroundDataFirst,
+      backgroundDataSecond: settings.backgroundDataSecond,
+      backgroundFooter: settings.backgroundFooter,
+      bordersAll: settings.bordersAll,
+      bordersHorizontal: settings.bordersHorizontal,
+      bordersVertical: settings.bordersVertical,
+      bordersTitleBottom: settings.bordersTitleBottom,
+      bordersHeadersBottom: settings.bordersHeadersBottom,
+      bordersHeadersVertical: settings.bordersHeadersVertical,
+      debugControl: settings.debugControl,
+      helpControl: settings.helpControl,
+      bordersThickness: settings.bordersThickness,
+    });
     return CardService.newUniversalActionResponseBuilder()
       .displayAddOnCards([card])
       .build();
@@ -1131,58 +1240,60 @@ namespace ActionHandlers {
   /**
    * Saves the user's settings.
    *
-   * @param {Event} e - Event from Gmail
-   * @return {ActionResponse}
+   * @param {GoogleAppsScript.Addons.EventObject} e - Event from Gmail
+   * @return {GoogleAppsScript.Card_Service.ActionResponse}
    */
   export function saveSettings(
     e: GoogleAppsScript.Addons.EventObject,
   ): GoogleAppsScript.Card_Service.ActionResponse {
-    var {
-      backgroundTitle,
-      backgroundHeaders,
-      backgroundDataFirst,
-      backgroundDataSecond,
-      backgroundFooter,
-      bordersAll,
-      bordersHorizontal,
-      bordersVertical,
-      bordersTitleBottom,
-      bordersHeadersBottom,
-      bordersHeadersVertical,
-      bordersThickness,
-      debugControl,
-    } = e.commonEventObject.formInputs;
-    const tableOptions: string[] =
-      e.commonEventObject.formInputs?.tableOptions?.stringInputs?.value || [];
+    console.log('e.commonEventObject :>> ', e.commonEventObject.formInputs);
+    const previousSettings = Settings.getSettingsForUser();
+    var formInputs = e.commonEventObject.formInputs;
+    const startdateLocalMs =
+      parseInt(formInputs.startdate.dateInput.msSinceEpoch) -
+      parseInt(e.commonEventObject.timeZone.offset);
+    const enddateLocalMs =
+      parseInt(formInputs.enddate.dateInput.msSinceEpoch) -
+      parseInt(e.commonEventObject.timeZone.offset);
     var settings = {
-      hasTitle: tableOptions.includes('hasTitle'),
-      hasHeaders: tableOptions.includes('hasHeaders'),
-      hasFooter: tableOptions.includes('hasFooter'),
-      leaveTop: tableOptions.includes('leaveTop'),
-      leaveLeft: tableOptions.includes('leaveLeft'),
-      leaveBottom: tableOptions.includes('leaveBottom'),
-      noBottom: tableOptions.includes('noBottom'),
-      centerAll: tableOptions.includes('centerAll'),
-      alternating: tableOptions.includes('alternating'),
-      backgroundTitle: parseInt(backgroundTitle.stringInputs.value[0]),
-      backgroundHeaders: parseInt(backgroundHeaders.stringInputs.value[0]),
-      backgroundDataFirst: parseInt(backgroundDataFirst.stringInputs.value[0]),
-      backgroundDataSecond: parseInt(
-        backgroundDataSecond.stringInputs.value[0],
+      bordersTitleBottom: parseInt(
+        formInputs.bordersTitleBottom.stringInputs.value[0],
       ),
-      backgroundFooter: parseInt(backgroundFooter.stringInputs.value[0]),
-      bordersAll: parseInt(bordersAll.stringInputs.value[0]),
-      bordersHorizontal: parseInt(bordersHorizontal.stringInputs.value[0]),
-      bordersVertical: parseInt(bordersVertical.stringInputs.value[0]),
-      bordersTitleBottom: parseInt(bordersTitleBottom.stringInputs.value[0]),
-      bordersHeadersBottom: parseInt(
-        bordersHeadersBottom.stringInputs.value[0],
+      backgroundDataSecond: parseInt(
+        formInputs.backgroundDataSecond.stringInputs.value[0],
+      ),
+      backgroundHeaders: parseInt(
+        formInputs.backgroundHeaders.stringInputs.value[0],
       ),
       bordersHeadersVertical: parseInt(
-        bordersHeadersVertical.stringInputs.value[0],
+        formInputs.bordersHeadersVertical.stringInputs.value[0],
       ),
-      bordersThickness: parseInt(bordersThickness.stringInputs.value[0]),
-      debugControl: debugControl ? 'ON' : 'OFF',
+      bordersAll: parseInt(formInputs.bordersAll.stringInputs.value[0]),
+      backgroundDataFirst: parseInt(
+        formInputs.backgroundDataFirst.stringInputs.value[0],
+      ),
+      bordersThickness: parseInt(
+        formInputs.bordersThickness.stringInputs.value[0],
+      ),
+      backgroundTitle: parseInt(
+        formInputs.backgroundTitle.stringInputs.value[0],
+      ),
+      debugControl: formInputs.debugControl ? 'ON' : 'OFF',
+      bordersVertical: parseInt(
+        formInputs.bordersVertical.stringInputs.value[0],
+      ),
+      bordersHorizontal: parseInt(
+        formInputs.bordersHorizontal.stringInputs.value[0],
+      ),
+      backgroundFooter: parseInt(
+        formInputs.backgroundFooter.stringInputs.value[0],
+      ),
+      bordersHeadersBottom: parseInt(
+        formInputs.bordersHeadersBottom.stringInputs.value[0],
+      ),
+      helpControl: 'off',
+      startdateMsSinceEpochStr: `${startdateLocalMs}`,
+      enddateMsSinceEpochStr: `${enddateLocalMs}`,
     };
 
     Settings.updateSettingsForUser(settings);
@@ -1194,37 +1305,50 @@ namespace ActionHandlers {
 
   /**
    * Resets the user settings to the defaults.
-   * @return {ActionResponse}
+   * @return {GoogleAppsScript.Card_Service.ActionResponse}
    */
   export function resetSettings(): GoogleAppsScript.Card_Service.ActionResponse {
     Settings.resetSettingsForUser();
-    var card = Views.buildSettingsCard();
+    var settings = Settings.getSettingsForUser();
+    var card = Views.buildSettingsCard({
+      backgroundTitle: settings.backgroundTitle,
+      backgroundHeaders: settings.backgroundHeaders,
+      backgroundDataFirst: settings.backgroundDataFirst,
+      backgroundDataSecond: settings.backgroundDataSecond,
+      backgroundFooter: settings.backgroundFooter,
+      bordersAll: settings.bordersAll,
+      bordersHorizontal: settings.bordersHorizontal,
+      bordersVertical: settings.bordersVertical,
+      bordersTitleBottom: settings.bordersTitleBottom,
+      bordersHeadersBottom: settings.bordersHeadersBottom,
+      bordersHeadersVertical: settings.bordersHeadersVertical,
+      bordersThickness: settings.bordersThickness,
+      debugControl: settings.debugControl,
+      helpControl: settings.helpControl,
+    });
     return CardService.newActionResponseBuilder()
       .setNavigation(CardService.newNavigation().updateCard(card))
       .setNotification(CardService.newNotification().setText('Settings reset.'))
       .build();
   }
 
-  export function prepareForHelp() {
+  export function prepareForHelp(): GoogleAppsScript.Card_Service.ActionResponse {
+    const tictoc = Shlog.tic('prepareForHelp');
     Settings.updateSettingsForUser({ ...g.UserSettings, helpControl: 'on' });
-    return CardService.newActionResponseBuilder()
-      .setNotification(
-        CardService.newNotification().setText(
-          `Now click on a command button to see more information about that command.`,
-        ),
-      )
-      .build();
+
+    return finished(
+      `Now click on a command button to see more information about that command.`,
+      tictoc,
+    );
   }
 
-  export function getHelp(actionName: string) {
+  export function getHelp(
+    actionName: string,
+  ): GoogleAppsScript.Card_Service.ActionResponse {
+    const tictoc = Shlog.tic('getHelp');
     Settings.updateSettingsForUser({ ...g.UserSettings, helpControl: 'off' });
-    return CardService.newActionResponseBuilder()
-      .setNotification(
-        CardService.newNotification().setText(
-          `Here's your help card on ${actionName}`,
-        ),
-      )
-      .build();
+    Utils.displayIt(Help[actionName], actionName);
+    return finished(`Here's your help card on ${actionName}`, tictoc);
   }
 
   /**
@@ -1238,7 +1362,12 @@ namespace ActionHandlers {
     return [toolsCard];
   }
 
-  export function formatAsCaption(e) {
+  /**
+   *
+   * @param {GoogleAppsScript.Addons.EventObject} e
+   */
+  export function formatAsCaption(e: { parameters: { location: any } }) {
+    const tictoc = Shlog.tic('formatAsCaption');
     const location = e.parameters.location;
     const [vertical, horizontal] = location.split('-');
     if (vertical === 'clear') {
@@ -1252,9 +1381,12 @@ namespace ActionHandlers {
         .setFontFamily('Roboto')
         .setHorizontalAlignment(horizontal);
     }
+
+    return finished(`Successfully formatted caption`, tictoc);
   }
 
   export function showFormula() {
+    const tictoc = Shlog.tic('showFormula');
     let formula = "'" + g.ActiveRange.offset(1, 0, 1, 1).getFormula();
     if (formula.length === 1) {
       formula = "'" + g.ActiveRange.offset(2, 0, 1, 1).getFormula();
@@ -1300,55 +1432,97 @@ namespace ActionHandlers {
     }
 
     g.ActiveRange.setRichTextValue(richText.build());
+
+    return finished(`Successfully show formula`, tictoc);
   }
 
-  export function makeRangeStatic() {
-    makeRangeStatic_(g.ActiveRange);
-    return CardService.newActionResponseBuilder()
-      .setNotification(
-        CardService.newNotification().setText(`Successfully made range static`),
-      )
-      .build();
+  /**
+   *
+   * @param {GoogleAppsScript.Addons.EventObject} e
+   */
+  export function makeRangeStatic(e: {
+    parameters: { noNotes: any };
+  }): GoogleAppsScript.Card_Service.ActionResponse {
+    const tictoc = Shlog.tic('makeRangeStatic');
+    const { noNotes } = e.parameters;
+    makeRangeStatic_(g.ActiveRange, noNotes);
+    return finished(`Successfully made range static`, tictoc);
   }
 
-  export function makeRangeDynamic() {
+  export function makeRangeDynamic(): GoogleAppsScript.Card_Service.ActionResponse {
+    const tictoc = Shlog.tic('makeRangeDynamic');
     makeRangeDynamic_(g.ActiveRange);
-    return CardService.newActionResponseBuilder()
-      .setNotification(
-        CardService.newNotification().setText(
-          `Successfully restored range formulas`,
-        ),
-      )
-      .build();
+    return (
+      Shlog.toc(tictoc) &&
+      CardService.newActionResponseBuilder()
+        .setNotification(
+          CardService.newNotification().setText(
+            `Successfully restored range formulas`,
+          ),
+        )
+        .build()
+    );
   }
 
-  export function makeSheetStatic() {
-    makeSheetStatic_(g.ActiveSheet);
-    return CardService.newActionResponseBuilder()
-      .setNotification(
-        CardService.newNotification().setText(`Successfully made sheet static`),
-      )
-      .build();
+  function finished(line: string, tt?: number) {
+    return (
+      Shlog.toc(tt) &&
+      CardService.newActionResponseBuilder()
+        .setNotification(CardService.newNotification().setText(line))
+        .build()
+    );
   }
 
-  export function makeSheetDynamic() {
-    makeSheetDynamic_(g.ActiveSheet);
-    return CardService.newActionResponseBuilder()
-      .setNotification(
-        CardService.newNotification().setText(
-          `Successfully restored sheet formulas`,
-        ),
-      )
-      .build();
+  /**
+   *
+   * @param {GoogleAppsScript.Addons.EventObject} e
+   */
+  export function makeSheetsStatic(e: {
+    parameters: { use: any; noNotes: any };
+  }) {
+    const tictoc = Shlog.tic('makeSheetsStatic');
+    const { use, noNotes } = e.parameters;
+    const sheets =
+      use === 'all'
+        ? g.ss.getSheets()
+        : use === 'list'
+        ? g.ActiveRange.getValues().flat()
+        : use === 'current'
+        ? [g.ActiveSheet]
+        : [];
+    sheets.forEach((sheet) => makeSheetStatic_(sheet, noNotes));
+    return finished(`Successfully made formulas static`, tictoc);
+  }
+
+  /**
+   *
+   * @param {GoogleAppsScript.Addons.EventObject} e
+   */
+  export function makeSheetsDynamic(e: { parameters: { use: any } }) {
+    const tictoc = Shlog.tic('makeSheetsDynamic');
+    const { use } = e.parameters;
+    const sheets =
+      use === 'all'
+        ? g.ss.getSheets()
+        : use === 'list'
+        ? g.ActiveRange.getValues().flat()
+        : use === 'current'
+        ? [g.ActiveSheet]
+        : [];
+    sheets.forEach((sheet) => makeSheetDynamic_(sheet));
+    return finished(`Successfully restored formulas`, tictoc);
   }
 
   /** Makes sheet static by placing content of either hard-coded values or functions into notes.
    * @param {GoogleAppsScript.Spreadsheet.Sheet|string} [sheet] - Optional sheet object or name of sheet to make static (defaults to active sheet)
+   * @param {boolean} noNotes - When true, function will not place values in notes
    * @returns {GoogleAppsScript.Spreadsheet.Sheet}
    */
   function makeSheetStatic_(
     sheet?: GoogleAppsScript.Spreadsheet.Sheet | string,
+    noNotes: boolean = false,
   ): GoogleAppsScript.Spreadsheet.Sheet {
+    const tictoc = Shlog.tic('makeSheetStatic_');
     const s = sheet
       ? typeof sheet === 'string'
         ? g.ss.getSheetByName(sheet)
@@ -1357,11 +1531,11 @@ namespace ActionHandlers {
 
     const range = s.getDataRange();
 
-    const response = makeRangeStatic_(range);
+    const response = makeRangeStatic_(range, noNotes);
 
-    if (response !== 'failed') s.setTabColor('#E92D18');
+    if (response !== 'failed' && !noNotes) s.setTabColor('#E92D18');
 
-    return s;
+    return Shlog.toc(tictoc) && s;
   }
 
   /** Places all notes into cells, whether they be formulas or values
@@ -1371,6 +1545,7 @@ namespace ActionHandlers {
   function makeSheetDynamic_(
     sheet?: GoogleAppsScript.Spreadsheet.Sheet | string,
   ): GoogleAppsScript.Spreadsheet.Sheet {
+    const tictoc = Shlog.tic('makeSheetDynamic_');
     const s = sheet
       ? typeof sheet === 'string'
         ? g.ss.getSheetByName(sheet)
@@ -1384,7 +1559,7 @@ namespace ActionHandlers {
     // change tab color to indicate sheet is dynamic
     if (response !== 'failed') s.setTabColor('#249A41');
 
-    return s;
+    return Shlog.toc(tictoc) && s;
   }
 
   /** Make range notes the user entered value/formula, but avoid shadow values
@@ -1393,11 +1568,20 @@ namespace ActionHandlers {
    */
   function makeRangeStatic_(
     range?: GoogleAppsScript.Spreadsheet.Range,
+    noNotes: boolean = false,
   ): GoogleAppsScript.Spreadsheet.Range | string {
+    const tictoc = Shlog.tic('makeRangeStatic_');
     const r = range || g.ActiveRange;
+    let status;
+
+    if (noNotes) {
+      return r.setValues(r.getValues());
+    }
 
     // save original values for the end
-    const originalValues = r.getValues();
+    const originalValues = r
+      .getValues()
+      .map((r) => r.map((c) => (c.toString().startsWith('=') ? `'${c}` : c)));
 
     // get range formulas, where no formula means ''
     const formulas = r.getFormulas();
@@ -1410,26 +1594,27 @@ namespace ActionHandlers {
 
       if (!confirmation) {
         Utils.displayError('Process cancelled!');
-        return 'failed';
+        status = 'failed';
       }
     }
 
-    // clear cell content for each formula
-    formulas.forEach((row, i) => {
-      row.forEach((cell, j) => {
-        if (cell) r.offset(i, j, 1, 1).clearContent();
+    if (status !== 'failed') {
+      // clear cell content for each formula
+      formulas.forEach((row, i) => {
+        row.forEach((cell, j) => {
+          if (cell) r.offset(i, j, 1, 1).clearContent();
+        });
       });
-    });
 
-    const combinedNotes = r
-      .getValues()
-      .map((row, i) => row.map((cell, j) => (cell ? cell : formulas[i][j])));
-    // set notes with updated values plus formulas to remove shadow values
-    r.setNotes(combinedNotes);
+      const combinedNotes = r
+        .getValues()
+        .map((row, i) => row.map((cell, j) => (cell ? cell : formulas[i][j])));
+      // set notes with updated values plus formulas to remove shadow values
+      r.setNotes(combinedNotes);
 
-    r.setValues(originalValues); // finally fill range with original values
-
-    return r;
+      r.setValues(originalValues); // finally fill range with original values
+    }
+    return (Shlog.toc(tictoc) && status) || r;
   }
 
   /** Replaces range values with value/formula stored in cell notes.
@@ -1439,7 +1624,10 @@ namespace ActionHandlers {
   function makeRangeDynamic_(
     range?: GoogleAppsScript.Spreadsheet.Range,
   ): GoogleAppsScript.Spreadsheet.Range | string {
+    const tictoc = Shlog.tic('makeRangeDynamic_');
     const r = range || g.ActiveRange;
+    let status;
+
     if (new Set(r.getFormulas().flat()).size > 1) {
       const confirmation = Utils.askQuestion(
         'Warning - appears to already be dynamic',
@@ -1448,16 +1636,18 @@ namespace ActionHandlers {
 
       if (!confirmation) {
         Utils.displayError('Process cancelled!');
-        return 'failed';
+        status = 'failed';
       }
     }
 
-    r.clearContent().setValues(r.getNotes()).setNote(null);
+    if (status !== 'failed')
+      r.clearContent().setValues(r.getNotes()).setNote(null);
 
-    return r;
+    return (Shlog.toc(tictoc) && status) || r;
   }
 
-  export function createNamedRangesFromSheet() {
+  export function createNamedRangesFromSheet(): GoogleAppsScript.Card_Service.ActionResponse {
+    const tictoc = Shlog.tic('createNamedRangesFromSheet');
     const ss = g.ss;
     const sheetName = g.ActiveSheet.getName();
     const dataRange = g.ActiveSheet.getDataRange();
@@ -1501,50 +1691,61 @@ namespace ActionHandlers {
     ss.getNamedRanges()
       .find((nr) => nr.getName() === tableName)
       .setRange(ss.getRange(`'${sheetName}'!${abc[0]}:${abc[width - 1]}`));
-    return CardService.newActionResponseBuilder()
-      .setNotification(
-        CardService.newNotification().setText(
-          `Successfully created named ranges.`,
-        ),
-      )
-      .build();
-  }
-
-  export function playground1() {
-    const tictoc = Shlog.tic('playground1');
-
-    return (
-      Shlog.toc(tictoc) &&
-      CardService.newActionResponseBuilder()
-        .setNotification(CardService.newNotification().setText(`Finished:`))
-        .build()
-    );
-  }
-
-  export function playground2() {
-    const tictoc = Shlog.tic('playground2');
     return (
       Shlog.toc(tictoc) &&
       CardService.newActionResponseBuilder()
         .setNotification(
           CardService.newNotification().setText(
-            `Finished running Playground 2`,
+            `Successfully created named ranges.`,
           ),
         )
         .build()
     );
   }
 
-  export function playground3() {
+  /**
+   * Displays the GraphQL query editor for a cell
+   */
+  export function showFunctionBuilder() {
+    const tictoc = Shlog.tic('showFunctionBuilder');
+    const ui = HtmlService.createHtmlOutputFromFile('query-editor')
+      .setWidth(600)
+      .setHeight(400)
+      .setSandboxMode(HtmlService.SandboxMode.IFRAME);
+    SpreadsheetApp.getUi().showModalDialog(ui, 'Query Editor');
+    return Shlog.toc(tictoc);
+  }
+
+  export function playground1(e) {
+    const tictoc = Shlog.tic('playground1');
+
+    return finished(`Playground1 complete`, tictoc);
+  }
+
+  export function playground2() {
+    const tictoc = Shlog.tic('playground2');
+    g.ss.getNamedRanges().forEach((namedRange) => {
+      const name = namedRange.getName();
+
+      if (name[0] == "'") {
+        const rangeA1n = namedRange.getRange().getA1Notation();
+        const sheetName = namedRange.getRange().getSheet().getName();
+        const cleanName = name.replace(/^.+!/, '');
+        namedRange.remove();
+        g.ss.setNamedRange(
+          cleanName,
+          g.ss.getRange(`'${sheetName}'!${rangeA1n}`),
+        );
+      }
+    });
+
+    return finished(`Playground2 complete`, tictoc);
+  }
+
+  export function playground3(e) {
     const tictoc = Shlog.tic('playground3');
-    return (
-      Shlog.toc(tictoc) &&
-      CardService.newActionResponseBuilder()
-        .setNotification(
-          CardService.newNotification().setText(`process complete`),
-        )
-        .build()
-    );
+
+    return finished(`Playground3 complete`, tictoc);
   }
 }
 

@@ -87,3 +87,7 @@ export interface TimeItResponse {
   error: string;
   elapsed: number;
 }
+
+export type ImageCollectionType = {
+  [key: string]: string;
+};

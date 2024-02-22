@@ -1,8 +1,7 @@
 import { Settings } from '@core/environment/Settings';
-import { SettingsOptions } from '@core/types/addon';
+import { ImageCollectionType, SettingsOptions } from '@core/types/addon';
 import { AppLib } from '@core/types/globals';
 
-// console.log('Reading CONFIG')
 globalThis.g = {};
 globalThis.daygs = AppLib.dayjs;
 globalThis.beautifygs = AppLib.beautify;
@@ -53,9 +52,26 @@ var myGlobalConfig: [string, () => unknown][] = [
         .map((f) => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map((s) => f + s))
         .flat(),
   ],
+  [
+    'SheetIcons',
+    (): ImageCollectionType => {
+      var folder = DriveApp.getFolderById(Settings.SPREADSHEET_ICON_FOLDER_ID);
+      var filecontents = folder.getFiles();
+
+      var icons = {};
+      var file: GoogleAppsScript.Drive.File;
+
+      while (filecontents.hasNext()) {
+        var file = filecontents.next();
+        const name = file.getName().replace(/\..*/, '');
+        icons[name] =
+          '=image("https://docs.google.com/uc?id=' + file.getId() + '")';
+      }
+      return icons;
+    },
+  ],
 ];
 
 myGlobalConfig.forEach(([propName, value]) => {
-  // console.log('Creating getter for:', propName)
   return addGetter_(propName, value);
 });
