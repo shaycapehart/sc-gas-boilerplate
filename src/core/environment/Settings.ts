@@ -78,8 +78,6 @@ namespace Settings {
         bordersHeadersVertical: Settings.DEFAULT.BORDERS_HEADERS_VERTICAL,
         helpControl: Settings.DEFAULT.HELP_CONTROL,
         debugControl: Settings.DEFAULT.DEBUG_CONTROL,
-        startdateMsSinceEpochStr: `${daygs().startOf('month').valueOf()}`,
-        enddateMsSinceEpochStr: `${daygs().endOf('month').valueOf()}`,
       },
       savedSettings,
     );

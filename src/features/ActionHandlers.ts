@@ -1249,12 +1249,6 @@ namespace ActionHandlers {
     console.log('e.commonEventObject :>> ', e.commonEventObject.formInputs);
     const previousSettings = Settings.getSettingsForUser();
     var formInputs = e.commonEventObject.formInputs;
-    const startdateLocalMs =
-      parseInt(formInputs.startdate.dateInput.msSinceEpoch) -
-      parseInt(e.commonEventObject.timeZone.offset);
-    const enddateLocalMs =
-      parseInt(formInputs.enddate.dateInput.msSinceEpoch) -
-      parseInt(e.commonEventObject.timeZone.offset);
     var settings = {
       bordersTitleBottom: parseInt(
         formInputs.bordersTitleBottom.stringInputs.value[0],
@@ -1292,8 +1286,6 @@ namespace ActionHandlers {
         formInputs.bordersHeadersBottom.stringInputs.value[0],
       ),
       helpControl: 'off',
-      startdateMsSinceEpochStr: `${startdateLocalMs}`,
-      enddateMsSinceEpochStr: `${enddateLocalMs}`,
     };
 
     Settings.updateSettingsForUser(settings);
