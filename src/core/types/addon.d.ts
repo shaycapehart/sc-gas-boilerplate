@@ -12,6 +12,18 @@ export interface ErrorCardOptions {
   showStackTrace?: boolean;
 }
 
+export interface RGBType {
+  r: number;
+  g: number;
+  b: number;
+}
+
+export interface HSLType {
+  h: number;
+  s: number;
+  l: number;
+}
+
 export interface SettingsOptions {
   hasTitle?: boolean;
   hasHeaders?: boolean;
@@ -36,6 +48,9 @@ export interface SettingsOptions {
   bordersHeadersVertical: number;
   debugControl: string;
   helpControl: string;
+  captureEvent?: boolean;
+  colorPicker?: string;
+  previousEvent?: GoogleAppsScript.Addons.EventObject;
 }
 
 export interface TableFormatOptionsType {

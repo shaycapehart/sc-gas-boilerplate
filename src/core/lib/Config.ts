@@ -4,8 +4,6 @@ import { AppLib } from '@core/types/globals';
 
 globalThis.g = {};
 globalThis.daygs = AppLib.dayjs;
-globalThis.beautifygs = AppLib.beautify;
-globalThis.currencygs = AppLib.currency;
 
 const addGetter_ = <T>(propName: string, value: () => T, target = g) => {
   Object.defineProperty(target, propName, {

@@ -14,7 +14,8 @@
     "push": "clasp push",
     "watch": "clasp push --watch",
     "clasp/dev": "npx clasp-env --folder . --scriptId 1s5iirJ0RJBmtmdGR1ONhbxMBXPnc5Y86v_dQFfkZiO-qLLLGZHEtHCiF && yarn watch",
-    "clasp/prod": "npx clasp-env --folder . --scriptId 1elbwkR__bd3wNlrMwxMG2D4enD8P09mMHlqXxfvYAJM370AnobL6KgfE && yarn watch"
+    "clasp/prod": "npx clasp-env --folder . --scriptId 1gMr1yh9HXKwFaXsPfkOKHPx5uV0ZPt-2AmWuA53rFQBDQdZhKuo3pjP4 && yarn watch",
+    "multipush": "multi-clasp push"
   },
   "devDependencies": {
     "@types/google-apps-script": "^1.0.53",

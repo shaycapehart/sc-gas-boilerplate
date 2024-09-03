@@ -1,13 +1,9 @@
 import { default as dayjs } from 'dayjs';
 import 'dayjs/plugin/duration';
-import currency from 'currency.js';
-import beautify from 'json-beautify';
 import { ImageCollectionType, SettingsOptions } from './addon';
 
 declare var AppLib: {
   dayjs: typeof dayjs;
-  currency: typeof currency;
-  beautify: typeof beautify;
 };
 
 declare global {
@@ -23,6 +19,4 @@ declare global {
     SheetIcons?: ImageCollectionType;
   };
   var daygs: typeof dayjs;
-  var beautifygs: typeof beautify;
-  var currencygs: typeof currency;
 }

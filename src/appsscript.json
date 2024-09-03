@@ -20,7 +20,8 @@
     "https://material-icons.github.io/",
     "https://ssl.gstatic.com/",
     "https://dummy-function-from-resources.net/",
-    "https://docs.google.com/"
+    "https://docs.google.com/",
+    "https://randomuser.me/"
   ],
   "addOns": {
     "common": {

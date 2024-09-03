@@ -1,7 +1,6 @@
 // @ts-ignore
 import { Settings } from '@core/environment/Settings';
 import { type Dayjs } from 'dayjs';
-// import { TicToc } from './types/addon'
 
 export interface TicToc {
   id?: number;
@@ -63,7 +62,7 @@ namespace Shlog {
     } = {},
   ): number {
     const settings = Settings.getSettingsForUser();
-    console.log('settings :>> ', settings);
+    // console.log('settings :>> ', settings);
     DEPTH++;
     const start: Dayjs = daygs();
     const tictoc = {
@@ -75,7 +74,7 @@ namespace Shlog {
       parameters: options.parameters
         ? Object.entries(options.parameters)
             .map(([key, value]) => {
-              return `${key}: ${beautifygs(value, null, 2, 80)}`;
+              return `${key}: ${JSON.stringify(value, null, 2)}`;
             })
             .join('\n')
         : '',
@@ -298,7 +297,7 @@ namespace Shlog {
     const tictoc = TICTOCS[tictocIndex];
     tictoc.stop = daygs();
     tictoc.result = options.result
-      ? cropString_(beautifygs(options.result, null, 2, 80))
+      ? cropString_(JSON.stringify(options.result, null, 2))
       : '';
     tictoc.error = options.error;
     tictoc.message = [tictoc.message, options.message].join('\n').trim();
@@ -354,6 +353,7 @@ namespace Shlog {
   }
 
   export function snap(message: string) {
+    console.log('snap :>> ', message);
     TICTOCS.push({
       name: 'snap',
       depth: DEPTH,
@@ -381,9 +381,9 @@ namespace Shlog {
       name: `TAP: ${title}`,
       message: options.message,
       parameters: options.parameters
-        ? beautifygs(options.parameters, null, 2, 80)
+        ? JSON.stringify(options.parameters, null, 2)
         : '',
-      result: options.result ? beautifygs(options.result, null, 2, 80) : '',
+      result: options.result ? JSON.stringify(options.result, null, 2) : '',
       error: options.error,
     };
     TICTOCS.push(tictoc);

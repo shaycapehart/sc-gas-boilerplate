@@ -5,6 +5,7 @@ import { Utils } from '@core/utils/Utils';
 import { Views } from './Views';
 import { Shlog, TicToc } from '@core/logging/Shlog';
 import { Help } from '@core/lib/Help';
+import { ImportJSON } from '@core/lib/ImportJSON';
 
 /**
  * Collection of functions to handle user interactions with the add-on.
@@ -151,7 +152,7 @@ namespace ActionHandlers {
   }
   export function setTableFormatDefaults(
     e: GoogleAppsScript.Addons.EventObject,
-  ): GoogleAppsScript.Card_Service.ActionResponse {
+  ) {
     const tictoc = Shlog.tic('setTableFormatDefaults');
     const tableOptions: string[] =
       e.commonEventObject.formInputs?.tableOptions?.stringInputs?.value || [];
@@ -238,8 +239,8 @@ namespace ActionHandlers {
       settings.bordersThickness === 1
         ? SOLID
         : settings.bordersThickness === 2
-        ? SOLID_MEDIUM
-        : SOLID_THICK,
+          ? SOLID_MEDIUM
+          : SOLID_THICK,
     );
 
     if (alternating) {
@@ -332,16 +333,13 @@ namespace ActionHandlers {
     return finished(`Successful formatted the table`, tictoc);
   }
 
-  export function squareSelectedCells(e: GoogleAppsScript.Addons.EventObject) {
+  export function squareSelectedCells(e?: GoogleAppsScript.Addons.EventObject) {
     const tictoc = Shlog.tic('squareSelectedCells');
-    console.log('e :>> ', e);
-    console.log(
-      'e.commonEventObject.formInputs :>> ',
-      e.commonEventObject.formInputs.pixels.stringInputs,
-    );
-    const pixels = parseInt(
-      e.commonEventObject.formInputs.pixels.stringInputs.value[0],
-    );
+
+    const pixels =
+      parseInt(
+        e.commonEventObject.formInputs?.pixels?.stringInputs?.value[0],
+      ) || 20;
     const nRows = g.ActiveRange.getHeight();
     const nCols = g.ActiveRange.getWidth();
     const startRow = g.ActiveRange.getRow();
@@ -441,14 +439,14 @@ namespace ActionHandlers {
     const type = !sep
       ? 'cell'
       : !n1 && !n2
-      ? a1 === a2
-        ? 'column'
-        : 'table'
-      : !n1 || !n2
-      ? 'range'
-      : n1 === n2
-      ? 'row'
-      : 'range';
+        ? a1 === a2
+          ? 'column'
+          : 'table'
+        : !n1 || !n2
+          ? 'range'
+          : n1 === n2
+            ? 'row'
+            : 'range';
     return Shlog.toc(tictoc) && type;
   }
   /* ------------------------------------------------- Import Range ------------------------------------------------- */
@@ -519,6 +517,21 @@ namespace ActionHandlers {
     return Shlog.toc(tictoc);
   }
 
+  export function outputEventObjectToSheet(
+    e: GoogleAppsScript.Addons.EventObject,
+  ) {
+    let sheetName = 'Event Object';
+    let sheet = g.ss.getSheetByName(sheetName);
+    if (!sheet) {
+      sheet = g.ss.insertSheet(sheetName);
+    } else {
+      // sheet.getDataRange().clear({ contentsOnly: true });
+    }
+    const data = ImportJSON.parseJSONObject(e);
+
+    sheet.getRange(1, 1, data.length, data[0].length).setValues(data);
+  }
+
   export function getNamedFunctions() {
     const tictoc = Shlog.tic('getNamedFunctions');
     const url = `https://docs.google.com/spreadsheets/export?exportFormat=xlsx&id=${g.ss.getId()}`;
@@ -565,9 +578,9 @@ namespace ActionHandlers {
               !b.definedFunction.startsWith('LAMBDA')
                 ? -1
                 : !a.definedFunction.startsWith('LAMBDA') &&
-                  b.definedFunction.startsWith('LAMBDA')
-                ? 1
-                : 0) ||
+                    b.definedFunction.startsWith('LAMBDA')
+                  ? 1
+                  : 0) ||
               a.definedName.localeCompare(b.definedName) ||
               a.definedFunction.localeCompare(b.definedFunction),
           )
@@ -580,7 +593,9 @@ namespace ActionHandlers {
     // DriveApp.getFiles(); // This comment line is used for automatically detecting the scope of Drive API.
   }
 
-  export function createNamedRangesDashboard(): GoogleAppsScript.Card_Service.ActionResponse {
+  export function createNamedRangesDashboard(
+    e?: GoogleAppsScript.Addons.EventObject,
+  ) {
     const tictoc = Shlog.tic('createNamedRangesDashboard');
     let namedRanges = g.ss.getNamedRanges();
     let sheet: GoogleAppsScript.Spreadsheet.Sheet,
@@ -671,14 +686,14 @@ namespace ActionHandlers {
       const type = !sep
         ? 2
         : !n1 && !n2
-        ? a1 === a2
-          ? 5
-          : 3
-        : !n1 || !n2
-        ? 1
-        : n1 === n2
-        ? 4
-        : 1;
+          ? a1 === a2
+            ? 5
+            : 3
+          : !n1 || !n2
+            ? 1
+            : n1 === n2
+              ? 4
+              : 1;
 
       rows.push([
         a1Notation,
@@ -725,10 +740,12 @@ namespace ActionHandlers {
       });
     }
 
-    return finished(`Build fresh named ranges dashboard`, tictoc);
+    return finished(`Build fresh named ranges dashboard`, tictoc, e);
   }
 
-  export function updateNamedRangeSheet(): GoogleAppsScript.Card_Service.ActionResponse {
+  export function updateNamedRangeSheet(
+    e?: GoogleAppsScript.Addons.EventObject,
+  ) {
     const tictoc = Shlog.tic('updateNamedRangeSheet');
     let namedRanges = g.ss.getNamedRanges();
     let rows: any[][];
@@ -828,7 +845,7 @@ namespace ActionHandlers {
       }
     });
 
-    return Shlog.toc(tictoc) && createNamedRangesDashboard();
+    return Shlog.toc(tictoc) && createNamedRangesDashboard(e);
   }
 
   export function createNamedFunctionsDashboard(): GoogleAppsScript.Spreadsheet.Sheet {
@@ -841,32 +858,35 @@ namespace ActionHandlers {
       ],
     ];
 
-    let SHEET: GoogleAppsScript.Spreadsheet.Sheet,
+    let sheet: GoogleAppsScript.Spreadsheet.Sheet,
       range: GoogleAppsScript.Spreadsheet.Range;
 
-    SHEET =
-      g.ss.getSheetByName('__named_functions__') ||
-      g.ss.insertSheet('__named_functions__');
+    sheet = g.ss.getSheetByName('__named_functions__');
 
-    range = SHEET.clear()
-      .setHiddenGridlines(true)
-      .setColumnWidth(1, 250)
-      .setColumnWidth(2, 600)
-      .setColumnWidth(3, 600)
-      .setColumnWidths(4, 9, 150)
-      .getRange(1, 1, SHEET.getMaxRows(), 12)
-      .setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP);
+    if (!sheet) {
+      sheet = g.ss.insertSheet('__named_functions__');
 
-    range.offset(0, 0, 1, 3).setValues(headers);
+      range = sheet
+        .clear()
+        .setHiddenGridlines(true)
+        .setColumnWidth(1, 250)
+        .setColumnWidth(2, 600)
+        .setColumnWidth(3, 600)
+        .setColumnWidths(4, 9, 150)
+        .getRange(1, 1, sheet.getMaxRows(), 12)
+        .setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP);
 
-    SHEET.deleteColumns(13, SHEET.getMaxColumns() - 12);
-    SHEET.setFrozenRows(1);
-    SHEET.setFrozenColumns(1);
+      // sheet.deleteColumns(13, sheet.getMaxColumns() - 12);
+      sheet.setFrozenRows(1);
+      sheet.setFrozenColumns(1);
+    }
 
-    return Shlog.toc(tictoc) && SHEET;
+    sheet.clear().getRange(1, 1, 1, headers[0].length).setValues(headers);
+
+    return Shlog.toc(tictoc) && sheet;
   }
   /* ---------------------------------------- Show Named Functions Dashboard ---------------------------------------- */
-  export function showNamedFunctionsDashboard(): GoogleAppsScript.Card_Service.ActionResponse {
+  export function showNamedFunctionsDashboard() {
     const tictoc = Shlog.tic('showNamedFunctionsDashboard');
     const url = `https://docs.google.com/spreadsheets/export?exportFormat=xlsx&id=${g.ss.getId()}`;
     const resHttp = UrlFetchApp.fetch(url, {
@@ -904,31 +924,7 @@ namespace ActionHandlers {
       ],
     ];
 
-    let sheet: GoogleAppsScript.Spreadsheet.Sheet,
-      range: GoogleAppsScript.Spreadsheet.Range;
-
-    sheet = (
-      g.ss.getSheetByName('__named_functions__') ||
-      g.ss.insertSheet('__named_functions__')
-    ).clear();
-
-    range = sheet
-      .clear()
-      .setHiddenGridlines(true)
-      .setColumnWidth(1, 250)
-      .setColumnWidth(2, 600)
-      .setColumnWidth(3, 600)
-      .setColumnWidths(4, 9, 150)
-      .getRange(1, 1, sheet.getMaxRows(), 12)
-      .setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP);
-
-    range.offset(0, 0, 1, 3).setValues(headers);
-
-    if (sheet.getMaxColumns() > 12)
-      sheet.deleteColumns(13, sheet.getMaxColumns() - 12);
-    sheet.setFrozenRows(1);
-    sheet.setFrozenColumns(1);
-    console.log('created new named functions sheet');
+    const sheet = createNamedFunctionsDashboard();
 
     sheet
       .getRange(2, 1, res.length, 2)
@@ -940,9 +936,9 @@ namespace ActionHandlers {
               !b.definedFunction.startsWith('LAMBDA')
                 ? -1
                 : !a.definedFunction.startsWith('LAMBDA') &&
-                  b.definedFunction.startsWith('LAMBDA')
-                ? 1
-                : 0) ||
+                    b.definedFunction.startsWith('LAMBDA')
+                  ? 1
+                  : 0) ||
               a.definedName.localeCompare(b.definedName) ||
               a.definedFunction.localeCompare(b.definedFunction),
           )
@@ -951,9 +947,16 @@ namespace ActionHandlers {
             definedFunction,
           ]),
       ]);
-
-    if (sheet.getMaxRows() > res.length + 1)
-      sheet.deleteRows(res.length + 2, sheet.getMaxRows() - res.length - 1);
+    if (sheet.getMaxRows() > sheet.getLastRow())
+      sheet.deleteRows(
+        sheet.getLastRow() + 1,
+        sheet.getMaxRows() - sheet.getLastRow(),
+      );
+    if (sheet.getMaxColumns() > sheet.getLastColumn())
+      sheet.deleteColumns(
+        sheet.getLastColumn() + 1,
+        sheet.getMaxColumns() - sheet.getLastColumn(),
+      );
     tableFormat(sheet.getDataRange(), {
       color: 'GREEN',
       hasTitle: false,
@@ -964,7 +967,7 @@ namespace ActionHandlers {
 
     return finished(`Successful refreshed named functions`, tictoc);
   }
-  export function createSheetWithToggleButtons(): GoogleAppsScript.Card_Service.ActionResponse {
+  export function createSheetWithToggleButtons() {
     const tictoc = Shlog.tic('createSheetWithToggleButtons');
     const sheet = (
       g.ss.getSheetByName('Color Toggles') || g.ss.insertSheet('Color Toggles')
@@ -1080,8 +1083,7 @@ namespace ActionHandlers {
     const tictoc = Shlog.tic('createStatsDashboard');
     // leave these two variables as is
     const TEMPLATE_SSID = '1vmgmyaphx9dcIbcnbK0mNwVWE7qHOflf975mEOgJm14';
-    const PLAIN_SHEETNAME = '__stats__';
-    const RAINBOW_SHEETNAME = '__rainbow_stats__';
+    const SHEETNAME = '__stats__';
 
     // change this if you want to,
     const DESTINATION_SHEETNAME = '__stats__';
@@ -1094,11 +1096,11 @@ namespace ActionHandlers {
 
     if (ssidResponse.getSelectedButton() == ui.Button.CANCEL) return;
 
-    const colorResponse = ui.alert(
-      'Which color theme?',
-      'Click YES for the rainbow or No for plain.',
-      ui.ButtonSet.YES_NO,
-    );
+    // const colorResponse = ui.alert(
+    //   'Which color theme?',
+    //   'Click YES for the rainbow or No for plain.',
+    //   ui.ButtonSet.YES_NO,
+    // );
 
     const destSS = ssidResponse.getResponseText()
       ? SpreadsheetApp.openById(ssidResponse.getResponseText())
@@ -1113,9 +1115,7 @@ namespace ActionHandlers {
       .filter((sn) => !sn.startsWith('__') && !(sn == DESTINATION_SHEETNAME));
 
     const statsSheet = SpreadsheetApp.openById(TEMPLATE_SSID)
-      .getSheetByName(
-        colorResponse == ui.Button.YES ? RAINBOW_SHEETNAME : PLAIN_SHEETNAME,
-      )
+      .getSheetByName(SHEETNAME)
       .copyTo(destSS)
       .setName(DESTINATION_SHEETNAME)
       .getRange('A1')
@@ -1123,9 +1123,7 @@ namespace ActionHandlers {
       .getSheet();
 
     sheetNames.forEach((sn, i) =>
-      statsSheet
-        .getRange(3 + 100 * i, colorResponse == ui.Button.YES ? 4 : 2)
-        .setValue(sn),
+      statsSheet.getRange(3 + 100 * i, 4).setValue(sn),
     );
 
     SpreadsheetApp.flush();
@@ -1137,18 +1135,32 @@ namespace ActionHandlers {
   export function getBackgroundColorsToNotes() {
     const tictoc = Shlog.tic('getBackgroundColorsToNotes');
     const backgrounds = g.ActiveRange.getBackgrounds();
-    const notes = backgrounds.map((r) =>
-      r.map((v) => {
-        if (v.toUpperCase() === '#FFFFFF' || !v) return;
-        return [
-          v,
-          'R: ' + parseInt(v.slice(1, 3), 16),
-          'G: ' + parseInt(v.slice(3, 5), 16),
-          'B: ' + parseInt(v.slice(-2), 16),
-        ].join('\n');
-      }),
-    );
-    g.ActiveRange.setNotes(notes);
+    const data = { values: [], fonts: [] };
+
+    backgrounds.forEach((r) => {
+      const dataRow = [];
+      const fontsRow = [];
+
+      r.forEach((c) => {
+        const hex = c.toUpperCase();
+        const brightness = Utils.brightnessByColor(hex);
+        const niceFontColor = Utils.niceColor(hex);
+        const fontHex = brightness > 130 ? '#000000' : '#ffffff';
+        const red = parseInt(hex.slice(-6, -4), 16);
+        const green = parseInt(hex.slice(-4, -2), 16);
+        const blue = parseInt(hex.slice(-2), 16);
+        dataRow.push(
+          `Brightness: ${brightness}\nR: ${red}\nG: ${green}\nB: ${blue}\nHex: ${hex}\nFont: ${fontHex}\nNice Font: ${niceFontColor}`,
+        );
+        fontsRow.push(fontHex);
+      });
+      data.values.push(dataRow);
+      data.fonts.push(fontsRow);
+    });
+    console.log('data :>> ', data);
+
+    g.ActiveRange.setNotes(data.values).setFontColors(data.fonts);
+
     return finished(`Successful backgrounds to notes`, tictoc);
   }
 
@@ -1157,28 +1169,53 @@ namespace ActionHandlers {
     g.ActiveRange.setValues(g.ActiveRange.getBackgrounds());
     return finished(`Successfully retrieved background colors`, tictoc);
   }
+
+  export function matchFontToBackground() {
+    const tictoc = Shlog.tic('matchFontToBackground');
+    const backgroundColors = g.ActiveRange.getBackgrounds();
+    const fontColors = backgroundColors.map((r) =>
+      r.map((c) =>
+        c.endsWith('f')
+          ? c.slice(0, -1) + 'e'
+          : c.slice(0, -2) +
+            ('0' + (parseInt(c.slice(-2), 16) + 1).toString(16)).slice(-2),
+      ),
+    );
+    g.ActiveRange.setFontColors(fontColors);
+    return finished(
+      `Successfully matched font color to the background`,
+      tictoc,
+    );
+  }
+
+  export function makeFontNiceColor() {
+    const tictoc = Shlog.tic('makeFontNiceColor');
+    const backgroundColors = g.ActiveRange.getBackgrounds();
+    const fontColors = backgroundColors.map((r) => r.map(Utils.niceColor));
+    g.ActiveRange.setFontColors(fontColors);
+    return finished(
+      `Successfully matched font color to the background`,
+      tictoc,
+    );
+  }
   /* -------------------------------------- Set Background Colors Using Values -------------------------------------- */
   export function setBackgroundsColorsUsingValues() {
     const tictoc = Shlog.tic('setBackgroundsColorsUsingValues');
-    const formulas = g.ActiveRange.getFormulas();
     const values = g.ActiveRange.getValues();
+
     g.ActiveRange.setBackgrounds(
       values.map((r) =>
         r.map((c) =>
-          c.toString()[0] === '#' ? c.toString() : '#' + c.toString(),
+          c === 0
+            ? '#000000'
+            : c.toString()[0] === '#'
+              ? c.toString()
+              : '#' + c.toString(),
         ),
       ),
     );
-    for (let i = 0; i < values.length; i += 1) {
-      for (let j = 0; j < values[0].length; j += 1) {
-        if (formulas[i][j] || /#[a-zA-Z0-9]{6}/.test(values[i][j].toString()))
-          continue;
 
-        g.ActiveRange.offset(i, j, 1, 1).setValue(
-          '#' + values[i][j].toString(),
-        );
-      }
-    }
+    ActionHandlers.matchFontToBackground();
 
     return finished(`Successfully set backgrounds using vals`, tictoc);
   }
@@ -1188,7 +1225,7 @@ namespace ActionHandlers {
     return [card];
   }
 
-  export function shiftFormulaDown(): GoogleAppsScript.Card_Service.ActionResponse {
+  export function shiftFormulaDown() {
     const tictoc = Shlog.tic('shiftFormulaDown');
     const headerCell = g.ActiveSheet.getRange(
       1,
@@ -1213,28 +1250,30 @@ namespace ActionHandlers {
    * @return {UniversalActionResponse}
    */
   export function showSettings(e) {
-    console.log('e :>> ', e);
-    var settings = Settings.getSettingsForUser();
-    console.log('settings :>> ', settings);
-    var card = Views.buildSettingsCard({
-      backgroundTitle: settings.backgroundTitle,
-      backgroundHeaders: settings.backgroundHeaders,
-      backgroundDataFirst: settings.backgroundDataFirst,
-      backgroundDataSecond: settings.backgroundDataSecond,
-      backgroundFooter: settings.backgroundFooter,
-      bordersAll: settings.bordersAll,
-      bordersHorizontal: settings.bordersHorizontal,
-      bordersVertical: settings.bordersVertical,
-      bordersTitleBottom: settings.bordersTitleBottom,
-      bordersHeadersBottom: settings.bordersHeadersBottom,
-      bordersHeadersVertical: settings.bordersHeadersVertical,
-      debugControl: settings.debugControl,
-      helpControl: settings.helpControl,
-      bordersThickness: settings.bordersThickness,
-    });
-    return CardService.newUniversalActionResponseBuilder()
-      .displayAddOnCards([card])
-      .build();
+    const tictoc = Shlog.tic('showSettings');
+    // console.log('e :>> ', e);
+    // var settings = Settings.getSettingsForUser();
+    // console.log('settings :>> ', settings);
+    if (!e) {
+      var card = Views.buildSettingsCard({
+        backgroundTitle: g.UserSettings.backgroundTitle,
+        backgroundHeaders: g.UserSettings.backgroundHeaders,
+        backgroundDataFirst: g.UserSettings.backgroundDataFirst,
+        backgroundDataSecond: g.UserSettings.backgroundDataSecond,
+        backgroundFooter: g.UserSettings.backgroundFooter,
+        bordersAll: g.UserSettings.bordersAll,
+        bordersHorizontal: g.UserSettings.bordersHorizontal,
+        bordersVertical: g.UserSettings.bordersVertical,
+        bordersTitleBottom: g.UserSettings.bordersTitleBottom,
+        bordersHeadersBottom: g.UserSettings.bordersHeadersBottom,
+        bordersHeadersVertical: g.UserSettings.bordersHeadersVertical,
+        debugControl: g.UserSettings.debugControl,
+        helpControl: g.UserSettings.helpControl,
+        bordersThickness: g.UserSettings.bordersThickness,
+      });
+      return finished('Settings shown', tictoc, e);
+    }
+    return showResults(JSON.stringify(g.UserSettings), tictoc, e);
   }
 
   /**
@@ -1246,7 +1285,10 @@ namespace ActionHandlers {
   export function saveSettings(
     e: GoogleAppsScript.Addons.EventObject,
   ): GoogleAppsScript.Card_Service.ActionResponse {
-    console.log('e.commonEventObject :>> ', e.commonEventObject.formInputs);
+    console.log(
+      'e.commonEventObject :>> ',
+      JSON.stringify(e.commonEventObject),
+    );
     const previousSettings = Settings.getSettingsForUser();
     var formInputs = e.commonEventObject.formInputs;
     var settings = {
@@ -1324,7 +1366,50 @@ namespace ActionHandlers {
       .build();
   }
 
-  export function prepareForHelp(): GoogleAppsScript.Card_Service.ActionResponse {
+  export function createToggles(): GoogleAppsScript.Card_Service.ActionResponse {
+    const tictoc = Shlog.tic('createToggles');
+
+    selectColor();
+    const activeRules = g.ActiveSheet.getConditionalFormatRules;
+
+    g.ActiveRange.insertCheckboxes().setBorder(
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      '#0c343d',
+      SpreadsheetApp.BorderStyle.SOLID_MEDIUM,
+    );
+
+    return (
+      Shlog.toc(tictoc) &&
+      CardService.newActionResponseBuilder()
+        .setNotification(
+          CardService.newNotification().setText(
+            `Now click on one of the top row of color icons to use for the toggles.`,
+          ),
+        )
+        .build()
+    );
+  }
+
+  export function selectColor(e?: GoogleAppsScript.Addons.EventObject) {
+    const tictoc = Shlog.tic('selectColor');
+    if (g.UserSettings.colorPicker === 'off') {
+      Settings.updateSettingsForUser({ ...g.UserSettings, colorPicker: 'on' });
+      return finished(
+        `Now click on one of the top row of color icons to use for the toggles.`,
+        tictoc,
+      );
+    }
+    Settings.updateSettingsForUser({ ...g.UserSettings, colorPicker: 'off' });
+    const color = e.commonEventObject.parameters.color;
+    return finished(`Here's your the color you picked ${color}`, tictoc);
+  }
+
+  export function prepareForHelp() {
     const tictoc = Shlog.tic('prepareForHelp');
     Settings.updateSettingsForUser({ ...g.UserSettings, helpControl: 'on' });
 
@@ -1334,12 +1419,34 @@ namespace ActionHandlers {
     );
   }
 
-  export function getHelp(
-    actionName: string,
-  ): GoogleAppsScript.Card_Service.ActionResponse {
+  export function getHelp(event: GoogleAppsScript.Addons.EventObject) {
+    const tictoc = Shlog.tic('getHelp');
+
+    if (g.UserSettings.helpControl === 'off') {
+      Settings.updateSettingsForUser({ ...g.UserSettings, helpControl: 'on' });
+      return finished(
+        `Now click on a command button to see more information about that command.`,
+        tictoc,
+      );
+    }
+    var actionName = event.commonEventObject.parameters.action;
+    Settings.updateSettingsForUser({ ...g.UserSettings, helpControl: 'off' });
+    const info = Help[actionName] || '';
+    const line = !info
+      ? `There is no information on ${actionName}`
+      : info.help || info.description;
+    Utils.alertIt(line, actionName);
+    return finished(`Here's your help card on ${actionName}`, tictoc);
+  }
+
+  export function createToggleButtons(actionName: string) {
     const tictoc = Shlog.tic('getHelp');
     Settings.updateSettingsForUser({ ...g.UserSettings, helpControl: 'off' });
-    Utils.displayIt(Help[actionName], actionName);
+    const info = Help[actionName] || '';
+    const line = !info
+      ? `There is no information on ${actionName}`
+      : info.help || info.description;
+    Utils.alertIt(line, actionName);
     return finished(`Here's your help card on ${actionName}`, tictoc);
   }
 
@@ -1432,16 +1539,14 @@ namespace ActionHandlers {
    *
    * @param {GoogleAppsScript.Addons.EventObject} e
    */
-  export function makeRangeStatic(e: {
-    parameters: { noNotes: any };
-  }): GoogleAppsScript.Card_Service.ActionResponse {
+  export function makeRangeStatic(e: { parameters: { noNotes: any } }) {
     const tictoc = Shlog.tic('makeRangeStatic');
     const { noNotes } = e.parameters;
     makeRangeStatic_(g.ActiveRange, noNotes);
     return finished(`Successfully made range static`, tictoc);
   }
 
-  export function makeRangeDynamic(): GoogleAppsScript.Card_Service.ActionResponse {
+  export function makeRangeDynamic() {
     const tictoc = Shlog.tic('makeRangeDynamic');
     makeRangeDynamic_(g.ActiveRange);
     return (
@@ -1456,13 +1561,16 @@ namespace ActionHandlers {
     );
   }
 
-  function finished(line: string, tt?: number) {
-    return (
-      Shlog.toc(tt) &&
-      CardService.newActionResponseBuilder()
-        .setNotification(CardService.newNotification().setText(line))
-        .build()
-    );
+  function finished(
+    line: string,
+    tt?: number,
+    e?: GoogleAppsScript.Addons.EventObject,
+  ) {
+    return Shlog.toc(tt) && e
+      ? CardService.newActionResponseBuilder()
+          .setNotification(CardService.newNotification().setText(line))
+          .build()
+      : g.ss.toast(line);
   }
 
   /**
@@ -1478,10 +1586,10 @@ namespace ActionHandlers {
       use === 'all'
         ? g.ss.getSheets()
         : use === 'list'
-        ? g.ActiveRange.getValues().flat()
-        : use === 'current'
-        ? [g.ActiveSheet]
-        : [];
+          ? g.ActiveRange.getValues().flat()
+          : use === 'current'
+            ? [g.ActiveSheet]
+            : [];
     sheets.forEach((sheet) => makeSheetStatic_(sheet, noNotes));
     return finished(`Successfully made formulas static`, tictoc);
   }
@@ -1497,10 +1605,10 @@ namespace ActionHandlers {
       use === 'all'
         ? g.ss.getSheets()
         : use === 'list'
-        ? g.ActiveRange.getValues().flat()
-        : use === 'current'
-        ? [g.ActiveSheet]
-        : [];
+          ? g.ActiveRange.getValues().flat()
+          : use === 'current'
+            ? [g.ActiveSheet]
+            : [];
     sheets.forEach((sheet) => makeSheetDynamic_(sheet));
     return finished(`Successfully restored formulas`, tictoc);
   }
@@ -1544,7 +1652,7 @@ namespace ActionHandlers {
         : sheet
       : g.ActiveSheet;
 
-    const range = s.getDataRange();
+    const range = s.getRange(1, 1, s.getLastRow(), s.getLastColumn());
 
     const response = makeRangeDynamic_(range);
 
@@ -1695,6 +1803,63 @@ namespace ActionHandlers {
     );
   }
 
+  export function createNamedRangesFromSelection(): GoogleAppsScript.Card_Service.ActionResponse {
+    const tictoc = Shlog.tic('createNamedRangesFromSheet');
+    const ss = g.ss;
+    const sheetName = g.ActiveSheet.getName();
+    const dataRange = g.ActiveRange;
+    const startColIndex = dataRange.getColumn() - 1;
+    const width = dataRange.getWidth();
+    const abc = g.ABCs.slice(startColIndex, startColIndex + width);
+    const fields = dataRange
+      .offset(0, 0, 1)
+      .getValues()[0]
+      .map((h) => Utils.titleCaseAndRemoveSpaces(h));
+
+    const tableName = Utils.titleCaseAndRemoveSpaces(sheetName);
+
+    const fieldList = [];
+    const rangeListA1 = [];
+
+    fields.forEach((field, i) => {
+      if (field) {
+        fieldList.push(field);
+        rangeListA1.push(`${abc[i]}:${abc[i]}`);
+      }
+    });
+
+    const rangeList = ss.getRangeList(rangeListA1);
+    const colRanges = rangeList.getRanges();
+
+    fieldList.forEach((field, i) => {
+      if (field) {
+        const namedRangeName = `${tableName}.${field}`;
+        ss.setNamedRange(namedRangeName, colRanges[i]);
+
+        ss.getNamedRanges()
+          .find((nr) => nr.getName() === namedRangeName)
+          .setRange(colRanges[i]);
+      }
+    });
+    ss.setNamedRange(
+      tableName,
+      g.ActiveSheet.getRange(`${abc[0]}:${abc[width - 1]}`),
+    );
+    ss.getNamedRanges()
+      .find((nr) => nr.getName() === tableName)
+      .setRange(ss.getRange(`'${sheetName}'!${abc[0]}:${abc[width - 1]}`));
+    return (
+      Shlog.toc(tictoc) &&
+      CardService.newActionResponseBuilder()
+        .setNotification(
+          CardService.newNotification().setText(
+            `Successfully created named ranges.`,
+          ),
+        )
+        .build()
+    );
+  }
+
   /**
    * Displays the GraphQL query editor for a cell
    */
@@ -1708,10 +1873,147 @@ namespace ActionHandlers {
     return Shlog.toc(tictoc);
   }
 
+  export function insertCommentBlock() {
+    g.ActiveRange.merge()
+      .setBackground('#FFF2CC')
+      .setBorder(
+        true,
+        true,
+        true,
+        true,
+        null,
+        null,
+        '#0c343d',
+        SpreadsheetApp.BorderStyle.SOLID,
+      )
+      .setHorizontalAlignment('center')
+      .setVerticalAlignment('middle')
+      .setFontColor('#134f5c');
+  }
+
+  export function requestRandomData(e) {
+    const tictoc = Shlog.tic('requestRandomData');
+    const randomOptions: string[] =
+      e.commonEventObject.formInputs?.randomOptions?.stringInputs?.value || [];
+
+    const randomNumberOptions: string[] =
+      e.commonEventObject.formInputs?.randomOptions?.stringInputs?.value || [];
+
+    const nRandom = parseInt(
+      e.commonEventObject.formInputs.nRandomData.stringInputs.value[0],
+    );
+    let data;
+    const fields = ['id', 'name', 'dob', 'location', 'phone', 'email'];
+
+    const fieldBool = [
+      randomOptions.includes('randomId'),
+      randomOptions.includes('randomName'),
+      randomOptions.includes('randomDate'),
+      randomOptions.includes('randomAddress'),
+      randomOptions.includes('randomPhone'),
+      randomOptions.includes('randomEmail'),
+    ];
+
+    const requestedFields = fields.filter((f, i) => fieldBool[i]);
+
+    const response = UrlFetchApp.fetch(
+      `https://randomuser.me/api/?results=${nRandom}&nat=us&inc=${requestedFields.join(',')}`,
+    );
+    const res = JSON.parse(response.getContentText());
+    data = [requestedFields];
+    res.results.forEach((r) => {
+      data.push(
+        requestedFields.map((f) => {
+          let value;
+          switch (f) {
+            case 'id':
+              value = r[f].value;
+              break;
+            case 'name':
+              value = r[f].first + ' ' + r[f].last;
+              break;
+            case 'dob':
+              value = new Date(r[f].date);
+              break;
+            case 'location':
+              value = `${r[f].city}, ${r[f].state}`;
+              break;
+            case 'phone':
+              value = r[f];
+              break;
+            case 'email':
+              value = r[f];
+              break;
+
+            default:
+              break;
+          }
+          return value;
+        }),
+      );
+    });
+
+    g.ActiveRange.offset(0, 0, data.length, data[0].length).setValues(data);
+
+    return finished(`Successful completed formatTable`, tictoc);
+  }
+
+  export function requestRandomNumbers(e) {
+    const tictoc = Shlog.tic('requestRandomNumbers');
+
+    const randomNumberOptions: string[] =
+      e.commonEventObject.formInputs?.randomNumberOptions?.stringInputs
+        ?.value || [];
+
+    const nRandom = parseInt(
+      e.commonEventObject.formInputs.nRandomNumbers.stringInputs.value[0],
+    );
+    let data;
+    if (randomNumberOptions.length) {
+      data = Array.from({ length: nRandom }, () =>
+        randomNumberOptions.includes('randomNumbers')
+          ? [Math.random() * 100]
+          : [Math.floor(Math.random() * 100) + 1],
+      );
+    }
+
+    g.ActiveRange.offset(0, 0, data.length, data[0].length).setValues(data);
+
+    return finished(`Successful completed formatTable`, tictoc);
+  }
+
   export function playground1(e) {
     const tictoc = Shlog.tic('playground1');
+    const url = `https://docs.google.com/spreadsheets/export?exportFormat=xlsx&id=${g.ss.getId()}`;
+    const resHttp = UrlFetchApp.fetch(url, {
+      headers: { authorization: 'Bearer ' + ScriptApp.getOAuthToken() },
+    });
 
-    return finished(`Playground1 complete`, tictoc);
+    // Retrieve the data from XLSX data.
+    const blobs = Utilities.unzip(
+      resHttp.getBlob().setContentType('application/zip'),
+    );
+    const workbook = blobs.find((b) => b.getName() == 'xl/workbook.xml');
+    if (!workbook) {
+      throw new Error('No file.');
+    }
+
+    console.log(workbook.getDataAsString());
+    // Parse XLSX data and retrieve the named functions.
+    const root = XmlService.parse(workbook.getDataAsString()).getRootElement();
+    console.log('root :>> ', XmlService.getPrettyFormat().format(root));
+    Logger.log('root :>> ', XmlService.getPrettyFormat().format(root));
+    let sheetName = 'Event Object';
+    let sheet = g.ss.getSheetByName(sheetName);
+    if (!sheet) {
+      sheet = g.ss.insertSheet(sheetName);
+    } else {
+      // sheet.getDataRange().clear({ contentsOnly: true });
+    }
+    const data = ImportJSON.parseJSONObject(root);
+
+    sheet.getRange(1, 1, data.length, data[0].length).setValues(data);
+    return showResults(JSON.stringify(e), tictoc, e);
   }
 
   export function playground2() {
@@ -1736,8 +2038,65 @@ namespace ActionHandlers {
 
   export function playground3(e) {
     const tictoc = Shlog.tic('playground3');
+    showSettings(e);
+    return showResults(JSON.stringify(e), tictoc, e);
+  }
 
-    return finished(`Playground3 complete`, tictoc);
+  export function parseJSONFromSheet() {
+    const tictoc = Shlog.tic('parseJSONFromSheet');
+    const sourceSheetName = g.ActiveSheet.getName();
+    let sheetName = 'JSON_Output';
+    let sheet = g.ss.getSheetByName(sheetName);
+    if (!sheet) {
+      sheet = g.ss.insertSheet(sheetName);
+    } else {
+      // sheet.getDataRange().clear({ contentsOnly: true });
+    }
+    const data = ImportJSON.ImportJSONFromSheet(
+      sourceSheetName,
+      '',
+      'noTruncate',
+    );
+
+    sheet.getRange(1, 1, data.length, data[0].length).setValues(data);
+
+    return finished(`parseJSONFromSheet complete`, tictoc);
+  }
+
+  export function parseJSONFromRange() {
+    const tictoc = Shlog.tic('parseJSONFromRange');
+    let sheetName = 'JSON_Output';
+    let sheet = g.ss.getSheetByName(sheetName);
+    if (!sheet) {
+      sheet = g.ss.insertSheet(sheetName);
+    } else {
+      // sheet.getDataRange().clear({ contentsOnly: true });
+    }
+    const data = ImportJSON.ImportJSONFromSheet('', '', 'noTruncate');
+
+    sheet.getRange(1, 1, data.length, data[0].length).setValues(data);
+
+    return finished(`parseJSONFromRange complete`, tictoc);
+  }
+
+  function showResults(
+    line: string,
+    tt?: number,
+    e?: GoogleAppsScript.Addons.EventObject,
+  ) {
+    if (!e) {
+      const ui = HtmlService.createHtmlOutput(`<p>${line}</p>`)
+        .setWidth(600)
+        .setHeight(400);
+
+      return Shlog.toc(tt) && g.ss.show(ui);
+    }
+    return (
+      Shlog.toc(tt) &&
+      CardService.newActionResponseBuilder()
+        .setNotification(CardService.newNotification().setText(line))
+        .build()
+    );
   }
 }
 

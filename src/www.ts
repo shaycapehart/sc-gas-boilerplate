@@ -93,24 +93,38 @@ function dispatchActionInternal(
   let tictoc: number;
   const settings = Settings.getSettingsForUser();
   if (settings.debugControl === 'ON') {
-    tictoc = Shlog.tic(event.commonEventObject.parameters.action, {
+    tictoc = Shlog.tic(event.commonEventObject.parameters.action + '.db', {
       parameters: event,
     });
     console.time('dispatchActionInternal');
   }
   try {
     var actionName = event.commonEventObject.parameters.action;
-    if (!actionName) {
-      throw new Error('Missing action name.');
-    }
+    // console.log('actionName :>> ', actionName);
 
-    if (settings.helpControl === 'on') {
-      return ActionHandlers.getHelp(actionName);
+    var actionFn;
+    // console.log('step1 :>> ');
+    if (!actionName) {
+      // console.log('step 1.1');
+
+      throw new Error('Missing action name.');
+    } else if (settings.helpControl === 'on') {
+      // console.log('1.2');
+
+      actionFn = ActionHandlers['getHelp'];
+    } else if (settings.colorPicker === 'on') {
+      // console.log('1.3');
+
+      actionFn = ActionHandlers['selectColor'];
+    } else {
+      // console.log('1.4');
+      actionFn = ActionHandlers[actionName];
     }
-    var actionFn = ActionHandlers[actionName];
     if (!actionFn) {
+      // console.log('1.5');
       throw new Error('Action not found: ' + actionName);
     }
+
     return actionFn(event);
   } catch (err) {
     if (optErrorHandler) {
@@ -178,12 +192,15 @@ function actionErrorHandler(
 
 function onOpen(e) {
   SpreadsheetApp.getUi()
-    .createMenu('My Sample React Project') // edit me!
-    .addItem('Test Menu Action', 'ActionHandlers.createNamedRangesDashboard')
+    .createMenu('GAS Tools') // edit me!
+    .addItem(
+      'Create Named Ranges dashboard',
+      'ActionHandlers.createNamedRangesDashboard',
+    )
     .addItem('PLayground1', 'ActionHandlers.playground1')
     .addItem('PLayground3', 'ActionHandlers.playground3')
     .addItem('Show Settings', 'ActionHandlers.showSettings')
-    .addItem('Show Event Object', 'showEventObject')
+    .addItem('Show Event Object', 'ActionHandlers.outputEventObjectToSheet')
     .addItem('Run onOpen', 'onOpen')
     .addToUi();
 }
