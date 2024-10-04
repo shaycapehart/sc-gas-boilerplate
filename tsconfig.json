@@ -29,8 +29,7 @@
     // "useUnknownInCatchVariables": true,
     // "exactOptionalPropertyTypes": true,
     "paths": {
-      "@core/*": ["src/core/*"],
-      "@features/*": ["src/features/*"]
+      "@lib/*": ["src/lib/*"]
     },
     "downlevelIteration": true
   },

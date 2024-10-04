@@ -35,13 +35,7 @@
     "google-apps-script",
     "gas",
     "typescript",
-    "rollup-js",
-    "prettier",
-    "eslint",
-    "javascript",
-    "babel",
-    "husky",
-    "lint-staged"
+    "prettier"
   ],
   "dependencies": {}
 }

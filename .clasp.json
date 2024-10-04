@@ -1,1 +1,5 @@
-{"scriptId":"1s5iirJ0RJBmtmdGR1ONhbxMBXPnc5Y86v_dQFfkZiO-qLLLGZHEtHCiF","rootDir":"./src","filePushOrder":["src/core/lib/AppLib.js"]}
+{
+  "scriptId": "1s5iirJ0RJBmtmdGR1ONhbxMBXPnc5Y86v_dQFfkZiO-qLLLGZHEtHCiF",
+  "rootDir": "./src",
+  "parentId": ["17FHglp8PGyfMGPNAVQ_YaVwxkzhtJduKep_5m2UAz6g"]
+}
