@@ -1,6 +1,6 @@
 import { Settings } from '@core/environment/Settings';
-import { MP, COLORS } from '@core/lib/COLORS';
-import { SortType, TableFormatOptionsType } from '@core/types/addon';
+import { MP, COLORS, THEMES } from '@core/lib/COLORS';
+import { SortType, TableFormatOptionsType, ThemeType } from '@core/types/addon';
 import { Utils } from '@core/utils/Utils';
 import { Views } from './Views';
 import { Shlog, TicToc } from '@core/logging/Shlog';
@@ -28,6 +28,25 @@ namespace ActionHandlers {
       .build();
   }
 
+  /* -------------------------------------------------- Backup Sheet -------------------------------------------------- */
+  // export function backupSheet(): GoogleAppsScript.Card_Service.ActionResponse {
+  //   const backupSS = SpreadsheetApp.create('Backup');
+  //   const backupSheet = backupSS.insertSheet(g.ActiveSheet.getName());
+  //   const backupSSID = backupSS.getId();
+
+  //   importRange(
+  //     g.ss.getId(),
+  //     `${g.ActiveSheet.getName()}!${g.ActiveSheet.getDataRange().getA1Notation()}`,
+  //     backupSSID,
+  //     `${g.ActiveSheet.getName()}!A1`,
+  //   );
+
+  //   return CardService.newActionResponseBuilder()
+  //     .setNotification(
+  //       CardService.newNotification().setText('Successfully made a backup'),
+  //     )
+  //     .build();
+  // }
   /* ------------------------------------------------- Format Tables ------------------------------------------------ */
   export function tableFormat(
     rng: GoogleAppsScript.Spreadsheet.Range,
@@ -52,7 +71,7 @@ namespace ActionHandlers {
     const CENTER = 'center';
     const BOLD = 'bold';
 
-    const { BASE, LIGHT, LIGHTER, LIGHTEST } = COLORS[color];
+    const { BASE, LIGHT, LIGHTER, LIGHTEST, DARK } = COLORS[color];
 
     // define the color shades
     const PALLETE = {
@@ -65,8 +84,8 @@ namespace ActionHandlers {
       BORDERS_HORIZONTAL: BASE,
       BORDERS_VERTICAL: BASE,
       BORDERS_TITLE_BOTTOM: null,
-      BORDERS_HEADERS_BOTTOM: null,
-      BORDERS_HEADERS_VERTICAL: null,
+      BORDERS_HEADERS_BOTTOM: LIGHT,
+      BORDERS_HEADERS_VERTICAL: BASE,
     };
 
     const { SOLID, SOLID_MEDIUM, DASHED, SOLID_THICK } =
@@ -131,7 +150,30 @@ namespace ActionHandlers {
         .setFontWeight(BOLD)
         .setBackground(PALLETE.BACKGROUND_TITLE);
 
-    if (headersRange) headersRange.setHorizontalAlignment(CENTER);
+    if (headersRange)
+      headersRange
+        .setHorizontalAlignment(CENTER)
+        .setFontColor(Utils.determineFontColor(PALLETE.BACKGROUND_HEADERS))
+        .setBorder(
+          null,
+          null,
+          true,
+          null,
+          null,
+          null,
+          PALLETE.BORDERS_HEADERS_BOTTOM,
+          SOLID,
+        )
+        .setBorder(
+          null,
+          null,
+          null,
+          null,
+          true,
+          null,
+          PALLETE.BORDERS_HEADERS_VERTICAL,
+          SOLID,
+        );
 
     if (centerAll) dataRange.setHorizontalAlignment(CENTER);
 
@@ -170,6 +212,151 @@ namespace ActionHandlers {
 
     Settings.updateSettingsForUser(settings);
     return finished(`Table format options updated`, tictoc);
+  }
+  export function changeColorTheme(e: GoogleAppsScript.Addons.EventObject) {
+    const tictoc = Shlog.tic('changeColorTheme');
+    const theme =
+      g.UserSettings.customThemes[e.commonEventObject.parameters.title];
+    changeTheme(theme);
+    return finished(`Spreadsheet theme updated`, tictoc);
+  }
+  export function setSpreadsheetTheme(e: GoogleAppsScript.Addons.EventObject) {
+    const tictoc = Shlog.tic('setSpreadsheetTheme');
+    console.log('e :>> ', JSON.stringify(e));
+    const f = e.commonEventObject.formInputs;
+
+    const theme = {
+      fontFamily: f.fontFamily.stringInputs.value[0],
+      textColor: f.textColor.stringInputs.value[0],
+      chartBackground: f.chartBackground.stringInputs.value[0],
+      accent1: f.accent1.stringInputs.value[0],
+      accent2: f.accent2.stringInputs.value[0],
+      accent3: f.accent3.stringInputs.value[0],
+      accent4: f.accent4.stringInputs.value[0],
+      accent5: f.accent5.stringInputs.value[0],
+      accent6: f.accent6.stringInputs.value[0],
+      hyperlinkColor: f.hyperlinkColor.stringInputs.value[0],
+    };
+
+    changeTheme(theme);
+    return finished(`Spreadsheet theme updated`, tictoc);
+  }
+
+  export function changeTheme(theme: ThemeType) {
+    const tictoc = Shlog.tic('changeTheme');
+
+    const accent1RGB = Utils.hexToRgb(theme.accent1);
+    const accent2RGB = Utils.hexToRgb(theme.accent2);
+    const accent3RGB = Utils.hexToRgb(theme.accent3);
+    const accent4RGB = Utils.hexToRgb(theme.accent4);
+    const accent5RGB = Utils.hexToRgb(theme.accent5);
+    const accent6RGB = Utils.hexToRgb(theme.accent6);
+    const textColorRGB = Utils.hexToRgb(theme.textColor);
+    const chartBackgroundRGB = Utils.hexToRgb(theme.chartBackground);
+    const hyperlinkColorRGB = Utils.hexToRgb(theme.hyperlinkColor);
+
+    g.ss
+      .getSpreadsheetTheme()
+      .setConcreteColor(
+        SpreadsheetApp.ThemeColorType.BACKGROUND,
+        chartBackgroundRGB.r,
+        chartBackgroundRGB.g,
+        chartBackgroundRGB.b,
+      )
+      .setConcreteColor(
+        SpreadsheetApp.ThemeColorType.TEXT,
+        textColorRGB.r,
+        textColorRGB.g,
+        textColorRGB.b,
+      )
+      .setConcreteColor(
+        SpreadsheetApp.ThemeColorType.ACCENT1,
+        accent1RGB.r,
+        accent1RGB.g,
+        accent1RGB.b,
+      )
+      .setConcreteColor(
+        SpreadsheetApp.ThemeColorType.ACCENT2,
+        accent2RGB.r,
+        accent2RGB.g,
+        accent2RGB.b,
+      )
+      .setConcreteColor(
+        SpreadsheetApp.ThemeColorType.ACCENT3,
+        accent3RGB.r,
+        accent3RGB.g,
+        accent3RGB.b,
+      )
+      .setConcreteColor(
+        SpreadsheetApp.ThemeColorType.ACCENT4,
+        accent4RGB.r,
+        accent4RGB.g,
+        accent4RGB.b,
+      )
+      .setConcreteColor(
+        SpreadsheetApp.ThemeColorType.ACCENT5,
+        accent5RGB.r,
+        accent5RGB.g,
+        accent5RGB.b,
+      )
+      .setConcreteColor(
+        SpreadsheetApp.ThemeColorType.ACCENT6,
+        accent6RGB.r,
+        accent6RGB.g,
+        accent6RGB.b,
+      )
+      .setConcreteColor(
+        SpreadsheetApp.ThemeColorType.HYPERLINK,
+        hyperlinkColorRGB.r,
+        hyperlinkColorRGB.g,
+        hyperlinkColorRGB.b,
+      )
+      .setFontFamily(theme.fontFamily);
+
+    return finished(`Spreadsheet theme updated`, tictoc);
+  }
+
+  export function saveSpreadsheetTheme(e: GoogleAppsScript.Addons.EventObject) {
+    const tictoc = Shlog.tic('saveSpreadsheetTheme');
+    console.log('e :>> ', JSON.stringify(e));
+    if (g.UserSettings.themeControl === 'off') {
+      Settings.updateSettingsForUser({
+        ...g.UserSettings,
+        themeControl: 'on',
+      });
+      return finished(
+        `Now click on one of the theme icon slot to save this theme`,
+        tictoc,
+      );
+    }
+    const f = e.commonEventObject.formInputs;
+
+    const customThemes = g.UserSettings.customThemes;
+
+    var buttonTitle = e.commonEventObject.parameters.title;
+
+    const customTheme = {
+      title: buttonTitle,
+      fontFamily: f.fontFamily.stringInputs.value[0],
+      textColor: f.textColor.stringInputs.value[0],
+      chartBackground: f.chartBackground.stringInputs.value[0],
+      accent1: f.accent1.stringInputs.value[0],
+      accent2: f.accent2.stringInputs.value[0],
+      accent3: f.accent3.stringInputs.value[0],
+      accent4: f.accent4.stringInputs.value[0],
+      accent5: f.accent5.stringInputs.value[0],
+      accent6: f.accent6.stringInputs.value[0],
+      hyperlinkColor: f.hyperlinkColor.stringInputs.value[0],
+    };
+
+    customThemes[buttonTitle] = customTheme;
+
+    Settings.updateSettingsForUser({
+      ...g.UserSettings,
+      customThemes,
+      themeControl: 'off',
+    });
+    return finished(`Spreadsheet theme saved`, tictoc);
   }
   export function formatRangeAsTable(
     e: GoogleAppsScript.Addons.EventObject,
@@ -309,7 +496,8 @@ namespace ActionHandlers {
           null,
           PALLETE.BORDERS_HEADERS_BOTTOM,
           SOLID,
-        );
+        )
+        .setFontColor(Utils.determineFontColor(PALLETE.BACKGROUND_HEADERS));
 
     if (centerAll) dataRange.setHorizontalAlignment(CENTER);
 
@@ -1082,7 +1270,7 @@ namespace ActionHandlers {
   export function createStatsDashboard() {
     const tictoc = Shlog.tic('createStatsDashboard');
     // leave these two variables as is
-    const TEMPLATE_SSID = '1vmgmyaphx9dcIbcnbK0mNwVWE7qHOflf975mEOgJm14';
+    const TEMPLATE_SSID = '1MBR6e7TMYF1NQHewxEmm2-T_-dt3bErewHli_c4uK08';
     const SHEETNAME = '__stats__';
 
     // change this if you want to,
@@ -1095,12 +1283,6 @@ namespace ActionHandlers {
     );
 
     if (ssidResponse.getSelectedButton() == ui.Button.CANCEL) return;
-
-    // const colorResponse = ui.alert(
-    //   'Which color theme?',
-    //   'Click YES for the rainbow or No for plain.',
-    //   ui.ButtonSet.YES_NO,
-    // );
 
     const destSS = ssidResponse.getResponseText()
       ? SpreadsheetApp.openById(ssidResponse.getResponseText())
@@ -1117,16 +1299,28 @@ namespace ActionHandlers {
     const statsSheet = SpreadsheetApp.openById(TEMPLATE_SSID)
       .getSheetByName(SHEETNAME)
       .copyTo(destSS)
-      .setName(DESTINATION_SHEETNAME)
-      .getRange('A1')
-      .check()
-      .getSheet();
+      .setName(DESTINATION_SHEETNAME);
 
-    sheetNames.forEach((sn, i) =>
-      statsSheet.getRange(3 + 100 * i, 4).setValue(sn),
-    );
+    const sheetNameCol = [];
+
+    for (let i of sheetNames) {
+      sheetNameCol.push([i]);
+      for (let n = 0; n < 99; n++) {
+        sheetNameCol.push(['']);
+      }
+    }
+
+    statsSheet.getRange(4, 3, sheetNameCol.length, 1).setValues(sheetNameCol);
+
+    statsSheet.getRange('A2').check();
 
     SpreadsheetApp.flush();
+
+    const yColValues = statsSheet.getRange('Y:Y').getValues();
+
+    sheetNames.forEach((sn, i) => {
+      statsSheet.getRange(6 + 100 * i, 1).setValue(yColValues[5 + 100 * i][0]);
+    });
 
     return finished(`Successful created stats dashboard`, tictoc);
   }
@@ -1166,7 +1360,10 @@ namespace ActionHandlers {
 
   export function getBackgroundColorsToValues() {
     const tictoc = Shlog.tic('getBackgroundColorsToValues');
-    g.ActiveRange.setValues(g.ActiveRange.getBackgrounds());
+    const bgColors = g.ActiveRange.getBackgrounds();
+    g.ActiveRange.setValues(bgColors).setFontColors(
+      bgColors.map((row) => row.map(Utils.determineFontColor)),
+    );
     return finished(`Successfully retrieved background colors`, tictoc);
   }
 
@@ -1255,22 +1452,7 @@ namespace ActionHandlers {
     // var settings = Settings.getSettingsForUser();
     // console.log('settings :>> ', settings);
     if (!e) {
-      var card = Views.buildSettingsCard({
-        backgroundTitle: g.UserSettings.backgroundTitle,
-        backgroundHeaders: g.UserSettings.backgroundHeaders,
-        backgroundDataFirst: g.UserSettings.backgroundDataFirst,
-        backgroundDataSecond: g.UserSettings.backgroundDataSecond,
-        backgroundFooter: g.UserSettings.backgroundFooter,
-        bordersAll: g.UserSettings.bordersAll,
-        bordersHorizontal: g.UserSettings.bordersHorizontal,
-        bordersVertical: g.UserSettings.bordersVertical,
-        bordersTitleBottom: g.UserSettings.bordersTitleBottom,
-        bordersHeadersBottom: g.UserSettings.bordersHeadersBottom,
-        bordersHeadersVertical: g.UserSettings.bordersHeadersVertical,
-        debugControl: g.UserSettings.debugControl,
-        helpControl: g.UserSettings.helpControl,
-        bordersThickness: g.UserSettings.bordersThickness,
-      });
+      var card = Views.buildSettingsCard(g.UserSettings);
       return finished('Settings shown', tictoc, e);
     }
     return showResults(JSON.stringify(g.UserSettings), tictoc, e);
@@ -1344,22 +1526,7 @@ namespace ActionHandlers {
   export function resetSettings(): GoogleAppsScript.Card_Service.ActionResponse {
     Settings.resetSettingsForUser();
     var settings = Settings.getSettingsForUser();
-    var card = Views.buildSettingsCard({
-      backgroundTitle: settings.backgroundTitle,
-      backgroundHeaders: settings.backgroundHeaders,
-      backgroundDataFirst: settings.backgroundDataFirst,
-      backgroundDataSecond: settings.backgroundDataSecond,
-      backgroundFooter: settings.backgroundFooter,
-      bordersAll: settings.bordersAll,
-      bordersHorizontal: settings.bordersHorizontal,
-      bordersVertical: settings.bordersVertical,
-      bordersTitleBottom: settings.bordersTitleBottom,
-      bordersHeadersBottom: settings.bordersHeadersBottom,
-      bordersHeadersVertical: settings.bordersHeadersVertical,
-      bordersThickness: settings.bordersThickness,
-      debugControl: settings.debugControl,
-      helpControl: settings.helpControl,
-    });
+    var card = Views.buildSettingsCard(settings);
     return CardService.newActionResponseBuilder()
       .setNavigation(CardService.newNavigation().updateCard(card))
       .setNotification(CardService.newNotification().setText('Settings reset.'))
@@ -1395,6 +1562,20 @@ namespace ActionHandlers {
     );
   }
 
+  export function toggleEventObjectPrinting(
+    e?: GoogleAppsScript.Addons.EventObject,
+  ) {
+    const tictoc = Shlog.tic('toggleEventObjectPrinting');
+    Settings.updateSettingsForUser({
+      ...g.UserSettings,
+      printEventObject: !g.UserSettings.printEventObject,
+    });
+    return finished(
+      `Event objects ${g.UserSettings.printEventObject ? 'will no longer be recorded to the spreadsheet' : 'will be recorded to the spreadsheet'}`,
+      tictoc,
+    );
+  }
+
   export function selectColor(e?: GoogleAppsScript.Addons.EventObject) {
     const tictoc = Shlog.tic('selectColor');
     if (g.UserSettings.colorPicker === 'off') {
@@ -1425,7 +1606,7 @@ namespace ActionHandlers {
     if (g.UserSettings.helpControl === 'off') {
       Settings.updateSettingsForUser({ ...g.UserSettings, helpControl: 'on' });
       return finished(
-        `Now click on a command button to see more information about that command.`,
+        `Now click on a button to see more information about that command.`,
         tictoc,
       );
     }
@@ -1621,13 +1802,15 @@ namespace ActionHandlers {
   function makeSheetStatic_(
     sheet?: GoogleAppsScript.Spreadsheet.Sheet | string,
     noNotes: boolean = false,
-  ): GoogleAppsScript.Spreadsheet.Sheet {
+  ) {
     const tictoc = Shlog.tic('makeSheetStatic_');
     const s = sheet
       ? typeof sheet === 'string'
         ? g.ss.getSheetByName(sheet)
-        : sheet
+        : null
       : g.ActiveSheet;
+
+    if (!s) return Shlog.toc(tictoc) && g.ss.toast(`No sheet called ${sheet}`);
 
     const range = s.getDataRange();
 
@@ -1983,63 +2166,56 @@ namespace ActionHandlers {
   }
 
   export function playground1(e) {
-    const tictoc = Shlog.tic('playground1');
-    const url = `https://docs.google.com/spreadsheets/export?exportFormat=xlsx&id=${g.ss.getId()}`;
-    const resHttp = UrlFetchApp.fetch(url, {
-      headers: { authorization: 'Bearer ' + ScriptApp.getOAuthToken() },
-    });
-
-    // Retrieve the data from XLSX data.
-    const blobs = Utilities.unzip(
-      resHttp.getBlob().setContentType('application/zip'),
+    const backupSS = SpreadsheetApp.openById(
+      '1F4DfNPZbEpWtPxRHoeXBTCGJUG_woS6fX2EHv4TSgsw',
     );
-    const workbook = blobs.find((b) => b.getName() == 'xl/workbook.xml');
-    if (!workbook) {
-      throw new Error('No file.');
-    }
+    const backupSSID = backupSS.getId();
 
-    console.log(workbook.getDataAsString());
-    // Parse XLSX data and retrieve the named functions.
-    const root = XmlService.parse(workbook.getDataAsString()).getRootElement();
-    console.log('root :>> ', XmlService.getPrettyFormat().format(root));
-    Logger.log('root :>> ', XmlService.getPrettyFormat().format(root));
-    let sheetName = 'Event Object';
-    let sheet = g.ss.getSheetByName(sheetName);
-    if (!sheet) {
-      sheet = g.ss.insertSheet(sheetName);
-    } else {
-      // sheet.getDataRange().clear({ contentsOnly: true });
-    }
-    const data = ImportJSON.parseJSONObject(root);
-
-    sheet.getRange(1, 1, data.length, data[0].length).setValues(data);
-    return showResults(JSON.stringify(e), tictoc, e);
+    importRange(
+      '1F4DfNPZbEpWtPxRHoeXBTCGJUG_woS6fX2EHv4TSgsw',
+      `Tiller!A18774:S21105`,
+      g.ss.getId(),
+      `Tiller!A18774`,
+    );
+    return;
   }
 
   export function playground2() {
     const tictoc = Shlog.tic('playground2');
-    g.ss.getNamedRanges().forEach((namedRange) => {
-      const name = namedRange.getName();
-
-      if (name[0] == "'") {
-        const rangeA1n = namedRange.getRange().getA1Notation();
-        const sheetName = namedRange.getRange().getSheet().getName();
-        const cleanName = name.replace(/^.+!/, '');
-        namedRange.remove();
-        g.ss.setNamedRange(
-          cleanName,
-          g.ss.getRange(`'${sheetName}'!${rangeA1n}`),
-        );
-      }
-    });
+    console.log(Utils.hexToRgb('#FF436F'));
 
     return finished(`Playground2 complete`, tictoc);
   }
 
   export function playground3(e) {
     const tictoc = Shlog.tic('playground3');
-    showSettings(e);
-    return showResults(JSON.stringify(e), tictoc, e);
+    const {
+      fontFamily,
+      textColor,
+      chartBackground,
+      accent1,
+      accent2,
+      accent3,
+      accent4,
+      accent5,
+      accent6,
+      hyperlinkColor,
+    } = e.formInput || {};
+    console.log(
+      'e.formInput :>> ',
+      fontFamily,
+      textColor,
+      chartBackground,
+      accent1,
+      accent2,
+      accent3,
+      accent4,
+      accent5,
+      accent6,
+      hyperlinkColor,
+    );
+    console.log('Utils.hex2Rgb(textColor) :>> ', Utils.hexToRgb(textColor));
+    return finished(`Playground3 complete`, tictoc);
   }
 
   export function parseJSONFromSheet() {
@@ -2061,6 +2237,32 @@ namespace ActionHandlers {
     sheet.getRange(1, 1, data.length, data[0].length).setValues(data);
 
     return finished(`parseJSONFromSheet complete`, tictoc);
+  }
+
+  export function parseJSONFromUrl() {
+    const tictoc = Shlog.tic('parseJSONFromUrl');
+    let sheetName = 'JSON_Output';
+    let sheet = g.ss.getSheetByName(sheetName);
+    if (!sheet) {
+      sheet = g.ss.insertSheet(sheetName);
+    } else {
+      // sheet.getDataRange().clear({ contentsOnly: true });
+    }
+    const ui = SpreadsheetApp.getUi();
+    const ssidResponse = ui.prompt(
+      'Enter the URL for the JSON data',
+      ui.ButtonSet.OK_CANCEL,
+    );
+
+    if (ssidResponse.getSelectedButton() == ui.Button.CANCEL) return;
+
+    const url = ssidResponse.getResponseText();
+
+    const data = ImportJSON.ImportJSON(url, '', 'noTruncate');
+
+    sheet.getRange(1, 1, data.length, data[0].length).setValues(data);
+
+    return finished(`parseJSONFromUrl complete`, tictoc);
   }
 
   export function parseJSONFromRange() {

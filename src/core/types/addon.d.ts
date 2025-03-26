@@ -1,3 +1,13 @@
+export interface OnEditEvent {
+  authMode: GoogleAppsScript.Script.AuthMode;
+  value: string;
+  oldValue: string;
+  range: GoogleAppsScript.Spreadsheet.Range;
+  source: GoogleAppsScript.Spreadsheet.Spreadsheet;
+  triggerUid: string;
+  user: GoogleAppsScript.Base.User;
+}
+
 export type AddonResponse =
   | GoogleAppsScript.Card_Service.Card
   | GoogleAppsScript.Card_Service.Card[]
@@ -48,9 +58,18 @@ export interface SettingsOptions {
   bordersHeadersVertical: number;
   debugControl: string;
   helpControl: string;
-  captureEvent?: boolean;
+  themeControl: string;
+  printEventObject?: boolean;
   colorPicker?: string;
   previousEvent?: GoogleAppsScript.Addons.EventObject;
+  customThemes: {
+    theme1: ThemeType | null;
+    theme2: ThemeType | null;
+    theme3: ThemeType | null;
+    theme4: ThemeType | null;
+    theme5: ThemeType | null;
+    theme6: ThemeType | null;
+  };
 }
 
 export interface TableFormatOptionsType {
@@ -64,6 +83,21 @@ export interface TableFormatOptionsType {
   noBottom?: boolean;
   centerAll: boolean;
   alternating: boolean;
+}
+
+export interface ThemeType {
+  title?: string;
+  description?: string;
+  fontFamily: string;
+  chartBackground: string;
+  textColor: string;
+  hyperlinkColor: string;
+  accent1: string;
+  accent2: string;
+  accent3: string;
+  accent4: string;
+  accent5: string;
+  accent6: string;
 }
 
 export interface SortType {

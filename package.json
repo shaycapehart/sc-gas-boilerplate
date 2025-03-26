@@ -36,6 +36,5 @@
     "gas",
     "typescript",
     "prettier"
-  ],
-  "dependencies": {}
+  ]
 }

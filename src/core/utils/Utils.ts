@@ -193,6 +193,10 @@ namespace Utils {
     return hslToHex({ h: h * 360, s: s * 100, l: l * 100 });
   }
 
+  export function determineFontColor(bgHex: string): string {
+    return rgbToHsl(hexToRgb(bgHex)).l > 50 ? '#000000' : '#FFFFFF';
+  }
+
   /**
    * Calculate brightness value by RGB or HEX color.
    * @param color (String) The color value in RGB or HEX (for example: #000000 || #000 || rgb(0,0,0) || rgba(0,0,0,0))

@@ -1,4 +1,4 @@
-import { AddonResponse, ErrorHandler } from '@core/types/addon';
+import { AddonResponse, ErrorHandler, OnEditEvent } from '@core/types/addon';
 import { Shlog } from '@core/logging/Shlog';
 import { Settings } from '@core/environment/Settings';
 import { Views } from '@features/Views';
@@ -32,22 +32,7 @@ function handleShowSettings(
   event: GoogleAppsScript.Addons.EventObject,
 ): AddonResponse {
   var settings = Settings.getSettingsForUser();
-  var card = Views.buildSettingsCard({
-    backgroundTitle: settings.backgroundTitle,
-    backgroundHeaders: settings.backgroundHeaders,
-    backgroundDataFirst: settings.backgroundDataFirst,
-    backgroundDataSecond: settings.backgroundDataSecond,
-    backgroundFooter: settings.backgroundFooter,
-    bordersAll: settings.bordersAll,
-    bordersHorizontal: settings.bordersHorizontal,
-    bordersVertical: settings.bordersVertical,
-    bordersTitleBottom: settings.bordersTitleBottom,
-    bordersHeadersBottom: settings.bordersHeadersBottom,
-    bordersHeadersVertical: settings.bordersHeadersVertical,
-    debugControl: settings.debugControl,
-    helpControl: settings.helpControl,
-    bordersThickness: settings.bordersThickness,
-  });
+  var card = Views.buildSettingsCard(settings);
   return [card];
 }
 
@@ -98,9 +83,10 @@ function dispatchActionInternal(
     });
     console.time('dispatchActionInternal');
   }
+  if (settings.printEventObject) ActionHandlers.outputEventObjectToSheet(event);
   try {
     var actionName = event.commonEventObject.parameters.action;
-    // console.log('actionName :>> ', actionName);
+    console.log('actionName :>> ', actionName);
 
     var actionFn;
     // console.log('step1 :>> ');
@@ -112,6 +98,8 @@ function dispatchActionInternal(
       // console.log('1.2');
 
       actionFn = ActionHandlers['getHelp'];
+    } else if (settings.themeControl === 'on') {
+      actionFn = ActionHandlers['saveSpreadsheetTheme'];
     } else if (settings.colorPicker === 'on') {
       // console.log('1.3');
 
@@ -197,10 +185,13 @@ function onOpen(e) {
       'Create Named Ranges dashboard',
       'ActionHandlers.createNamedRangesDashboard',
     )
+    .addItem('Create Stats dashboard', 'ActionHandlers.createStatsDashboard')
     .addItem('PLayground1', 'ActionHandlers.playground1')
     .addItem('PLayground3', 'ActionHandlers.playground3')
     .addItem('Show Settings', 'ActionHandlers.showSettings')
     .addItem('Show Event Object', 'ActionHandlers.outputEventObjectToSheet')
+    .addItem('Backup current sheet', 'ActionHandlers.backupSheet')
+    .addItem('Empty logs', 'ActionHandlers.emptyLogRecords')
     .addItem('Run onOpen', 'onOpen')
     .addToUi();
 }

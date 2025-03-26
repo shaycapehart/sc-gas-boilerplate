@@ -1,4 +1,4 @@
-import { COLORS } from '@core/lib/COLORS';
+import { COLORS, THEMES } from '@core/lib/COLORS';
 import { Shlog } from '@core/logging/Shlog';
 import { ErrorCardOptions, SettingsOptions } from '@core/types/addon';
 
@@ -35,6 +35,19 @@ namespace Views {
       description: 'Run playground 3 function',
       iconUrl: buildIconUrl_('looks_3'),
       action: 'playground3',
+    }),
+    backupSheetWidget: createActionWidget_({
+      title: 'Backup sheet',
+      description: 'Make a backup of current sheet',
+      iconUrl: buildIconUrl_('archive'),
+      action: 'backupSheet',
+    }),
+    toggleEventObjectPrintingWidget: createActionWidget_({
+      title: 'Toggle event object printing',
+      description:
+        'When ON, the event object for each action will be recorded to the Event Object sheet.',
+      iconUrl: buildIconUrl_('help_outline'),
+      action: 'toggleEventObjectPrinting',
     }),
     helpWidget: createActionWidget_({
       title: 'Click here and then any command',
@@ -193,7 +206,7 @@ namespace Views {
     makeSheetListStaticWidget: createActionWidget_({
       title: 'Make sheet name list static',
       description:
-        'Convert all formulas on selected sheet names to values, save in notes',
+        'Make all formulas static and placed in notes for any sheet name in the current selected range',
       iconUrl:
         'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxZW0iIGhlaWdodD0iMWVtIiB2aWV3Qm94PSIwIDAgMjQgMjQiPjxwYXRoIGZpbGw9IiNmNjA5MDkiIGQ9Ik0yMS44IDE2di0xLjVjMC0xLjQtMS40LTIuNS0yLjgtMi41cy0yLjggMS4xLTIuOCAyLjVWMTZjLS42IDAtMS4yLjYtMS4yIDEuMnYzLjVjMCAuNy42IDEuMyAxLjIgMS4zaDUuNWMuNyAwIDEuMy0uNiAxLjMtMS4ydi0zLjVjMC0uNy0uNi0xLjMtMS4yLTEuM20tMS4zIDBoLTN2LTEuNWMwLS44LjctMS4zIDEuNS0xLjNzMS41LjUgMS41IDEuM3pNMyAxM3YtMmgxMnYyem0wLTdoMTh2Mkgzem0wIDEydi0yaDZ2MnoiLz48L3N2Zz4=',
       action: 'makeSheetsStatic',
@@ -201,7 +214,8 @@ namespace Views {
     }),
     makeSheetListDynamicWidget: createActionWidget_({
       title: 'Make sheet name list dynamic',
-      description: 'Restore all note formulas on selected sheet names',
+      description:
+        'Restore all note formulas for any sheet names in the current selected range',
       iconUrl: buildIconUrl_('lock_open'),
       action: 'makeSheetsDynamic',
       parameters: { use: 'list' },
@@ -324,6 +338,90 @@ namespace Views {
         multiLine: false,
       },
     }),
+    colorThemeWidgets: {
+      accent1ColorWidget: createFormElementWidget_({
+        title: 'Accent/Series 1 color',
+        id: 'accent1',
+        text: {
+          default: g.Theme.accent1,
+        },
+      }),
+      backgroundColorWidget: createFormElementWidget_({
+        title: 'Chart background color',
+        id: 'chartBackground',
+        text: {
+          default: g.Theme.chartBackground,
+        },
+      }),
+      textColorWidget: createFormElementWidget_({
+        title: 'Text color',
+        id: 'textColor',
+        text: {
+          default: g.Theme.textColor,
+        },
+      }),
+      fontColorWidget: createFormElementWidget_({
+        title: 'Font family',
+        id: 'fontFamily',
+        text: {
+          default: g.Theme.fontFamily,
+        },
+      }),
+      hyperlinkColorWidget: createFormElementWidget_({
+        title: 'Hyperlink color',
+        id: 'hyperlinkColor',
+        text: {
+          default: g.Theme.hyperlinkColor,
+        },
+      }),
+      accent2ColorWidget: createFormElementWidget_({
+        title: 'Accent/Series 2 color',
+        id: 'accent2',
+        text: {
+          default: g.Theme.accent2,
+        },
+      }),
+      accent3ColorWidget: createFormElementWidget_({
+        title: 'Accent/Series 3 color',
+        id: 'accent3',
+        text: {
+          default: g.Theme.accent3,
+        },
+      }),
+      accent4ColorWidget: createFormElementWidget_({
+        title: 'Accent/Series 4 color',
+        id: 'accent4',
+        text: {
+          default: g.Theme.accent4,
+        },
+      }),
+      accent5ColorWidget: createFormElementWidget_({
+        title: 'Accent/Series 5 color',
+        id: 'accent5',
+        text: {
+          default: g.Theme.accent5,
+        },
+      }),
+      accent6ColorWidget: createFormElementWidget_({
+        title: 'Accent/Series 6 color',
+        id: 'accent6',
+        text: {
+          default: g.Theme.accent6,
+        },
+      }),
+      setSpreadsheetThemeWidget: createActionWidget_({
+        title: 'Set theme',
+        description: 'Sets spreadsheet theme using provided values',
+        iconUrl: buildIconUrl_('lock'),
+        action: 'setSpreadsheetTheme',
+      }),
+      saveSpreadsheetThemeWidget: createActionWidget_({
+        title: 'Save theme',
+        description: 'Save theme values to one of the custom slots',
+        iconUrl: buildIconUrl_('lock'),
+        action: 'saveSpreadsheetTheme',
+      }),
+    },
     requestRandomNumbersWidget: createActionWidget_({
       title: 'Get random numbers',
       description:
@@ -339,13 +437,19 @@ namespace Views {
       },
     }),
     parseJSONFromSheetWidget: createActionWidget_({
-      title: 'Parse JSON text',
+      title: 'Parse JSON from sheet',
       description: 'Parse the JSON formatted text in the active sheet',
       iconUrl: `data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxZW0iIGhlaWdodD0iMWVtIiB2aWV3Qm94PSIwIDAgMjQgMjQiPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iYmxhY2siIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgc3Ryb2tlLXdpZHRoPSIyIj48cGF0aCBkPSJNMTUgMkg2YTIgMiAwIDAgMC0yIDJ2MTZhMiAyIDAgMCAwIDIgMmgxMmEyIDIgMCAwIDAgMi0yVjdaIi8+PHBhdGggZD0iTTE0IDJ2NGEyIDIgMCAwIDAgMiAyaDRtLTEwIDRhMSAxIDAgMCAwLTEgMXYxYTEgMSAwIDAgMS0xIDFhMSAxIDAgMCAxIDEgMXYxYTEgMSAwIDAgMCAxIDFtNCAwYTEgMSAwIDAgMCAxLTF2LTFhMSAxIDAgMCAxIDEtMWExIDEgMCAwIDEtMS0xdi0xYTEgMSAwIDAgMC0xLTEiLz48L2c+PC9zdmc+`,
       action: 'parseJSONFromSheet',
     }),
+    importJSONFromUrlWidget: createActionWidget_({
+      title: 'Import JSON from Url',
+      description: 'Import JSON from URL and place in new sheet',
+      iconUrl: `data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxZW0iIGhlaWdodD0iMWVtIiB2aWV3Qm94PSIwIDAgMjQgMjQiPjxnIGZpbGw9Im5vbmUiIHN0cm9rZT0iYmxhY2siIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgc3Ryb2tlLXdpZHRoPSIyIj48cGF0aCBkPSJNMTUgMkg2YTIgMiAwIDAgMC0yIDJ2MTZhMiAyIDAgMCAwIDIgMmgxMmEyIDIgMCAwIDAgMi0yVjdaIi8+PHBhdGggZD0iTTE0IDJ2NGEyIDIgMCAwIDAgMiAyaDRtLTEwIDRhMSAxIDAgMCAwLTEgMXYxYTEgMSAwIDAgMS0xIDFhMSAxIDAgMCAxIDEgMXYxYTEgMSAwIDAgMCAxIDFtNCAwYTEgMSAwIDAgMCAxLTF2LTFhMSAxIDAgMCAxIDEtMWExIDEgMCAwIDEtMS0xdi0xYTEgMSAwIDAgMC0xLTEiLz48L2c+PC9zdmc+`,
+      action: 'parseJSONFromUrl',
+    }),
     parseJSONFromRangeWidget: createActionWidget_({
-      title: 'Parse JSON text',
+      title: 'Parse JSON from range',
       description: 'Parse the JSON formatted text in the selected range',
       iconUrl: `data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxZW0iIGhlaWdodD0iMWVtIiB2aWV3Qm94PSIwIDAgMTYgMTYiPjxwYXRoIGZpbGw9ImJsYWNrIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik02IDIuOTg0VjJoLS4wOXEtLjQ3IDAtLjkwOS4xODVhMi4zIDIuMyAwIDAgMC0uNzc1LjUzYTIuMiAyLjIgMCAwIDAtLjQ5My43NTN2LjAwMWEzLjUgMy41IDAgMCAwLS4xOTguODN2LjAwMmE2IDYgMCAwIDAtLjAyNC44NjNxLjAxOC40MzUuMDE4Ljg2OXEwIC4zMDQtLjExNy41NzJ2LjAwMWExLjUgMS41IDAgMCAxLS43NjUuNzg3YTEuNCAxLjQgMCAwIDEtLjU1OC4xMTVIMnYuOTg0aC4wOXEuMjkyIDAgLjU1Ni4xMjFsLjAwMS4wMDFxLjI2Ny4xMTcuNDU1LjMxOGwuMDAyLjAwMnEuMTk2LjE5NS4zMDcuNDY1bC4wMDEuMDAycS4xMTcuMjcuMTE3LjU2NnEwIC40MzUtLjAxOC44NjlxLS4wMTguNDQzLjAyNC44N3YuMDAxcS4wNS40MjUuMTk3LjgyNHYuMDAxcS4xNi40MS40OTQuNzUzcS4zMzUuMzQ1Ljc3NS41M3QuOTEuMTg1SDZ2LS45ODRoLS4wOXEtLjMgMC0uNTYzLS4xMTVhMS42IDEuNiAwIDAgMS0uNDU3LS4zMmExLjcgMS43IDAgMCAxLS4zMDktLjQ2N3EtLjExLS4yNy0uMTEtLjU3M3EwLS4zNDMuMDExLS42NzJxLjAxMi0uMzQyIDAtLjY2NWE1IDUgMCAwIDAtLjA1NS0uNjRhMi43IDIuNyAwIDAgMC0uMTY4LS42MDlBMi4zIDIuMyAwIDAgMCAzLjUyMiA4YTIuMyAyLjMgMCAwIDAgLjczOC0uOTU1cS4xMi0uMjg4LjE2OC0uNjAycS4wNS0uMzE1LjA1NS0uNjRxLjAxMi0uMzMgMC0uNjY2dC0uMDEyLS42NzhhMS40NyAxLjQ3IDAgMCAxIC44NzctMS4zNTRhMS4zIDEuMyAwIDAgMSAuNTYzLS4xMjF6bTQgMTAuMDMyVjE0aC4wOXEuNDcgMCAuOTA5LS4xODV0Ljc3NS0uNTN0LjQ5My0uNzUzdi0uMDAxcS4xNS0uNC4xOTgtLjgzdi0uMDAycS4wNDItLjQyLjAyNC0uODYzcS0uMDE4LS40MzUtLjAxOC0uODY5cTAtLjMwNC4xMTctLjU3MnYtLjAwMWExLjUgMS41IDAgMCAxIC43NjUtLjc4N2ExLjQgMS40IDAgMCAxIC41NTgtLjExNUgxNHYtLjk4NGgtLjA5cS0uMjkzIDAtLjU1Ny0uMTIxbC0uMDAxLS4wMDFhMS40IDEuNCAwIDAgMS0uNDU1LS4zMThsLS4wMDItLjAwMmExLjQgMS40IDAgMCAxLS4zMDctLjQ2NXYtLjAwMmExLjQgMS40IDAgMCAxLS4xMTgtLjU2NnEwLS40MzUuMDE4LS44NjlhNiA2IDAgMCAwLS4wMjQtLjg3di0uMDAxYTMuNSAzLjUgMCAwIDAtLjE5Ny0uODI0di0uMDAxYTIuMiAyLjIgMCAwIDAtLjQ5NC0uNzUzYTIuMyAyLjMgMCAwIDAtLjc3NS0uNTNhMi4zIDIuMyAwIDAgMC0uOTEtLjE4NUgxMHYuOTg0aC4wOXEuMyAwIC41NjIuMTE1cS4yNi4xMjMuNDU3LjMycS4xOS4yMDEuMzA5LjQ2N3EuMTEuMjcuMTEuNTczcTAgLjM0Mi0uMDExLjY3MnEtLjAxMi4zNDIgMCAuNjY1cS4wMDYuMzMzLjA1NS42NHEuMDUuMzIuMTY4LjYwOWEyLjMgMi4zIDAgMCAwIC43MzguOTU1YTIuMyAyLjMgMCAwIDAtLjczOC45NTVhMi43IDIuNyAwIDAgMC0uMTY4LjYwMnEtLjA1LjMxNS0uMDU1LjY0YTkgOSAwIDAgMCAwIC42NjZxLjAxMi4zMzYuMDEyLjY3OGExLjQ3IDEuNDcgMCAwIDEtLjg3NyAxLjM1NGExLjMgMS4zIDAgMCAxLS41NjMuMTIxeiIgY2xpcC1ydWxlPSJldmVub2RkIi8+PC9zdmc+`,
       action: 'parseJSONFromRange',
@@ -365,15 +469,22 @@ namespace Views {
   const cpButtonSet = () => {
     let buttonSet = CardService.newButtonSet();
 
-    ['RED', 'ORANGE', 'GREEN', 'BLUE', 'PURPLE', 'PINK'].forEach((color, i) => {
+    [
+      'DARK_RED',
+      'DARK_ORANGE',
+      'DARK_GREEN',
+      'DARK_TEAL',
+      'DARK_PURPLE',
+      'DARK_GREY',
+    ].forEach((color, i) => {
       let hex = COLORS[color].BASE;
       buttonSet.addButton(
         createActionIconButtonWidget_({
           title: color,
-          // iconUrl: `https://ui-avatars.com/api/?size=20&background=${hex.slice(
-          //   1,
-          // )}&color=${hex.slice(1)}&rounded=true`,
-          iconUrl: tableIconButtonUris[i],
+          iconUrl: `https://ui-avatars.com/api/?size=20&background=${hex.slice(
+            1,
+          )}&color=${hex.slice(1)}&rounded=true`,
+          // iconUrl: tableIconButtonUris[i],
           action: 'formatTable',
           parameters: { color },
         }),
@@ -385,7 +496,7 @@ namespace Views {
   const mpButtonSet = () => {
     let buttonSet = CardService.newButtonSet();
 
-    ['#B30000', '#B36B00', '#00B300', '#0000B3', '#6B00B3', '#B300B3'].forEach(
+    ['#4285F4', '#FFC40D', '#8673FF', '#03D069', '#FF436F', '#FF6D01'].forEach(
       (color, i) => {
         buttonSet.addButton(
           createActionIconButtonWidget_({
@@ -396,6 +507,29 @@ namespace Views {
             // iconUrl: tableIconButtonUris[i],
             action: 'formatRangeAsTable',
             parameters: { color },
+          }),
+        );
+      },
+    );
+    return buttonSet;
+  };
+
+  const colorThemeButtonSet = () => {
+    let buttonSet = CardService.newButtonSet();
+
+    ['RED', 'GREEN', 'BLUE', 'PURPLE', 'ORANGE', 'YELLOW'].forEach(
+      (color, i) => {
+        let hex = COLORS[color].BASE;
+        let title = 'theme' + (i + 1);
+        buttonSet.addButton(
+          createActionIconButtonWidget_({
+            title,
+            // iconUrl: `https://ui-avatars.com/api/?size=20&background=${hex.slice(
+            //   1,
+            // )}&color=${hex.slice(1)}&rounded=true`,
+            iconUrl: tableIconButtonUris[i],
+            action: 'changeColorTheme',
+            parameters: { title },
           }),
         );
       },
@@ -426,291 +560,328 @@ namespace Views {
   }
 
   export function buildToolsCard() {
-    const logPlaygroundSection = CardService.newCardSection()
-      .setHeader('LOGS AND PLAYGROUNDS')
-      .setCollapsible(true)
-      .setNumUncollapsibleWidgets(1)
-      .addWidget(
-        CardService.newButtonSet()
-          .addButton(widgets.emptyLogRecordsWidget.asButtonIcon())
-          .addButton(widgets.playground1Widget.asButtonIcon())
-          .addButton(widgets.playground2Widget.asButtonIcon())
-          .addButton(widgets.parseJSONFromSheetWidget.asButtonIcon())
-          .addButton(widgets.parseJSONFromRangeWidget.asButtonIcon())
-          .addButton(
-            CardService.newImageButton()
-              .setAltText('Run onOpen')
-              .setOnClickAction(
-                CardService.newAction().setFunctionName('onOpen'),
-              )
-              .setIconUrl(buildIconUrl_('menu_open')),
-          )
-          .addButton(widgets.helpWidget.asButtonIcon()),
-      )
-      .addWidget(DIVIDER)
-      .addWidget(widgets.emptyLogRecordsWidget.asDecoratedText())
-      .addWidget(widgets.playground1Widget.asDecoratedText())
-      .addWidget(widgets.playground2Widget.asDecoratedText())
-      .addWidget(widgets.parseJSONFromSheetWidget.asDecoratedText())
-      .addWidget(widgets.parseJSONFromRangeWidget.asDecoratedText());
-
-    const cropsAndColorsSection = CardService.newCardSection()
-      .setHeader('CROPS AND COLOR TOOLS')
-      .setCollapsible(true)
-      .setNumUncollapsibleWidgets(2)
-      .addWidget(
-        CardService.newButtonSet()
-          .addButton(widgets.cropToSelectionWidget.asButtonIcon())
-          .addButton(widgets.cropToDataWidget.asButtonIcon())
-          .addButton(widgets.setBackgroundsUsingCellValuesWidget.asButtonIcon())
-          .addButton(widgets.getBackgroundColorToValuesWidget.asButtonIcon())
-          .addButton(widgets.getBackgroundColorToNotesWidget.asButtonIcon())
-          .addButton(widgets.createSheetOfTogglesWidget.asButtonIcon()),
-      )
-      .addWidget(
-        CardService.newButtonSet()
-          .addButton(widgets.insertCommentBlockWidget.asButtonIcon())
-          .addButton(widgets.createTogglesWidget.asButtonIcon()),
-      )
-      .addWidget(DIVIDER)
-      .addWidget(widgets.cropToSelectionWidget.asDecoratedText())
-      .addWidget(widgets.cropToDataWidget.asDecoratedText())
-      .addWidget(DIVIDER)
-      .addWidget(widgets.setBackgroundsUsingCellValuesWidget.asDecoratedText())
-      .addWidget(widgets.getBackgroundColorToValuesWidget.asDecoratedText())
-      .addWidget(widgets.getBackgroundColorToNotesWidget.asDecoratedText())
-      .addWidget(widgets.matchFontToBackgroundWidget.asDecoratedText())
-      .addWidget(widgets.makeFontNiceColorWidget.asDecoratedText())
-      .addWidget(DIVIDER)
-      .addWidget(widgets.squareSelectedCellsWidget.asDecoratedText())
-      .addWidget(widgets.squareSideLengthWidget);
-
-    /* ------------------------------------------------- Color Table ------------------------------------------------ */
-
-    const tableFormatSection = CardService.newCardSection()
-      .setHeader('TABLE FORMAT')
-      .setCollapsible(true)
-      .setNumUncollapsibleWidgets(1)
-      .addWidget(cpButtonSet())
-      .addWidget(mpButtonSet())
-      .addWidget(
-        createFormElementWidget_({
-          title:
-            'Table format options. Shading preferences for the second row of colors can be set in the Addon settings (top-right menu)',
-          id: 'tableOptions',
-          checkboxGroup: {
-            items: [
-              {
-                label: 'Title',
-                value: 'hasTitle',
-                selected: g.UserSettings.hasTitle,
-              },
-              {
-                label: 'Headers',
-                value: 'hasHeaders',
-                selected: g.UserSettings.hasHeaders,
-              },
-              {
-                label: 'Footer',
-                value: 'hasFooter',
-                selected: g.UserSettings.hasFooter,
-              },
-              {
-                label: 'Leave top unchanged',
-                value: 'leaveTop',
-                selected: g.UserSettings.leaveTop,
-              },
-              {
-                label: 'Leave left unchanged',
-                value: 'leaveLeft',
-                selected: g.UserSettings.leaveLeft,
-              },
-              {
-                label: 'Leave bottom unchanged',
-                value: 'leaveBottom',
-                selected: g.UserSettings.leaveBottom,
-              },
-              {
-                label: 'No bottom',
-                value: 'noBottom',
-                selected: g.UserSettings.noBottom,
-              },
-              {
-                label: 'Center all',
-                value: 'centerAll',
-                selected: g.UserSettings.centerAll,
-              },
-              {
-                label: 'Alternating',
-                value: 'alternating',
-                selected: g.UserSettings.alternating,
-              },
-            ],
-          },
-        }),
-      )
-      .addWidget(widgets.setTableFormatDefaultsWidget.asDecoratedText());
-
-    const randomSection = CardService.newCardSection()
-      .setHeader('RANDOM DATA')
-      .setCollapsible(true)
-      .setNumUncollapsibleWidgets(0)
-      .addWidget(widgets.requestRandomDataWidget.asDecoratedText())
-      .addWidget(widgets.randomDataRequestedWidget)
-      .addWidget(
-        createFormElementWidget_({
-          title: 'Fields to include',
-          id: 'randomOptions',
-          checkboxGroup: {
-            items: [
-              {
-                label: 'Date',
-                value: 'randomDate',
-                selected: false,
-              },
-              {
-                label: 'ID',
-                value: 'randomId',
-                selected: false,
-              },
-              {
-                label: 'Name',
-                value: 'randomName',
-                selected: false,
-              },
-              {
-                label: 'Address',
-                value: 'randomAddress',
-                selected: false,
-              },
-              {
-                label: 'Phone',
-                value: 'randomPhone',
-                selected: false,
-              },
-              {
-                label: 'Email',
-                value: 'randomEmail',
-                selected: false,
-              },
-            ],
-          },
-        }),
-      )
-      .addWidget(DIVIDER)
-      .addWidget(widgets.requestRandomNumbersWidget.asDecoratedText())
-      .addWidget(widgets.randomNumbersRequestedWidget)
-      .addWidget(
-        createFormElementWidget_({
-          title: `It's either the data above or random numbers. Can't return both at the same time.`,
-          id: 'randomNumberOptions',
-          checkboxGroup: {
-            items: [
-              {
-                label: 'Integers',
-                value: 'randomIntegers',
-                selected: false,
-              },
-              {
-                label: 'Real Numbers',
-                value: 'randomNumbers',
-                selected: false,
-              },
-            ],
-          },
-        }),
-      );
-
-    const dashboardsSection = CardService.newCardSection()
-      .setHeader('DASHBOARDS')
-      .setCollapsible(true)
-      .setNumUncollapsibleWidgets(1)
-      .addWidget(
-        CardService.newButtonSet()
-          .addButton(widgets.createStatsDashboardWidget.asButtonIcon())
-          .addButton(widgets.createNamedRangesDashboardWidget.asButtonIcon())
-          .addButton(widgets.showNamedFunctionsDashboardWidget.asButtonIcon())
-          .addButton(widgets.showFormulaWidget.asButtonIcon()),
-      )
-      .addWidget(widgets.createStatsDashboardWidget.asDecoratedText())
-      .addWidget(widgets.createNamedRangesDashboardWidget.asDecoratedText())
-      .addWidget(widgets.updateNamedRangesDashboardWidget.asDecoratedText())
-      .addWidget(widgets.createNamedRangesFromSheetWidget.asDecoratedText())
-      .addWidget(widgets.createNamedRangesFromSelectionWidget.asDecoratedText())
-      .addWidget(widgets.showFormulaWidget.asDecoratedText())
-      .addWidget(DIVIDER);
-
-    const staticSection = CardService.newCardSection()
-      .setHeader('STATIC/DYNAMIC')
-      .setCollapsible(true)
-      .setNumUncollapsibleWidgets(1)
-      .addWidget(
-        CardService.newButtonSet()
-          .addButton(widgets.makeRangeStaticWidget.asButtonIcon())
-          .addButton(widgets.makeRangeDynamicWidget.asButtonIcon())
-          .addButton(widgets.makeSheetStaticWidget.asButtonIcon())
-          .addButton(widgets.makeSheetDynamicWidget.asButtonIcon())
-          .addButton(widgets.makeSheetStaticNoNotesWidget.asButtonIcon()),
-      )
-      .addWidget(DIVIDER)
-      .addWidget(widgets.makeRangeStaticWidget.asDecoratedText())
-      .addWidget(widgets.makeSheetStaticWidget.asDecoratedText())
-      .addWidget(widgets.makeAllSheetsStaticWidget.asDecoratedText())
-      .addWidget(widgets.makeSheetListStaticWidget.asDecoratedText())
-      .addWidget(DIVIDER)
-      .addWidget(widgets.makeRangeDynamicWidget.asDecoratedText())
-      .addWidget(widgets.makeSheetDynamicWidget.asDecoratedText())
-      .addWidget(widgets.makeAllSheetsDynamicWidget.asDecoratedText())
-      .addWidget(widgets.makeSheetListDynamicWidget.asDecoratedText())
-      .addWidget(DIVIDER)
-      .addWidget(widgets.makeRangeStaticNoNotesWidget.asDecoratedText())
-      .addWidget(widgets.makeSheetStaticNoNotesWidget.asDecoratedText());
-
-    const captionFormatSection = CardService.newCardSection()
-      .setHeader('CAPTIONS')
-      .setCollapsible(true)
-      .setNumUncollapsibleWidgets(1)
-      .addWidget(
-        CardService.newTextParagraph().setText(
-          'Format selected cells as captions',
-        ),
-      )
-      .addWidget(
-        CardService.newButtonSet()
-          .addButton(widgets.captionTopLeftWidget.asTextButton())
-          .addButton(widgets.captionTopWidget.asTextButton())
-          .addButton(widgets.captionTopRightWidget.asTextButton()),
-      )
-      .addWidget(
-        CardService.newButtonSet()
-          .addButton(widgets.captionLeftWidget.asTextButton())
-          .addButton(widgets.captionClearWidget.asTextButton())
-          .addButton(widgets.captionRightWidget.asTextButton()),
-      )
-      .addWidget(
-        CardService.newButtonSet()
-          .addButton(widgets.captionBottomLeftWidget.asTextButton())
-          .addButton(widgets.captionBottomWidget.asTextButton())
-          .addButton(widgets.captionBottomRightWidget.asTextButton()),
-      );
-
-    /* --------------------------------------------- Build Final Card --------------------------------------------- */
-    const toolsCard = CardService.newCardBuilder()
+    return CardService.newCardBuilder()
       .setHeader(
         CardService.newCardHeader()
           .setTitle(SpreadsheetApp.getActive().getName())
           .setSubtitle(getActiveInfoStr()),
       )
-      .addSection(cropsAndColorsSection)
-      .addSection(tableFormatSection)
-      .addSection(staticSection)
-      .addSection(dashboardsSection)
-      .addSection(randomSection)
-      .addSection(captionFormatSection)
-      .addSection(logPlaygroundSection)
+      .addSection(
+        CardService.newCardSection()
+          .setHeader('CROPS AND COLOR TOOLS')
+          .setCollapsible(true)
+          .setNumUncollapsibleWidgets(2)
+          .addWidget(
+            CardService.newButtonSet()
+              .addButton(widgets.cropToSelectionWidget.asButtonIcon())
+              .addButton(widgets.cropToDataWidget.asButtonIcon())
+              .addButton(
+                widgets.setBackgroundsUsingCellValuesWidget.asButtonIcon(),
+              )
+              .addButton(
+                widgets.getBackgroundColorToValuesWidget.asButtonIcon(),
+              )
+              .addButton(widgets.getBackgroundColorToNotesWidget.asButtonIcon())
+              .addButton(widgets.createSheetOfTogglesWidget.asButtonIcon()),
+          )
+          .addWidget(
+            CardService.newButtonSet()
+              .addButton(widgets.insertCommentBlockWidget.asButtonIcon())
+              .addButton(widgets.createTogglesWidget.asButtonIcon()),
+          )
+          .addWidget(DIVIDER)
+          .addWidget(widgets.cropToSelectionWidget.asDecoratedText())
+          .addWidget(widgets.cropToDataWidget.asDecoratedText())
+          .addWidget(DIVIDER)
+          .addWidget(
+            widgets.setBackgroundsUsingCellValuesWidget.asDecoratedText(),
+          )
+          .addWidget(widgets.getBackgroundColorToValuesWidget.asDecoratedText())
+          .addWidget(widgets.getBackgroundColorToNotesWidget.asDecoratedText())
+          .addWidget(widgets.matchFontToBackgroundWidget.asDecoratedText())
+          .addWidget(widgets.makeFontNiceColorWidget.asDecoratedText())
+          .addWidget(DIVIDER)
+          .addWidget(widgets.squareSelectedCellsWidget.asDecoratedText())
+          .addWidget(widgets.squareSideLengthWidget),
+      )
+      .addSection(
+        CardService.newCardSection()
+          .setHeader('TABLE FORMAT')
+          .setCollapsible(true)
+          .setNumUncollapsibleWidgets(1)
+          .addWidget(cpButtonSet())
+          .addWidget(mpButtonSet())
+          .addWidget(
+            createFormElementWidget_({
+              title:
+                'Table format options. Shading preferences for the second row of colors can be set in the Addon settings (top-right menu)',
+              id: 'tableOptions',
+              checkboxGroup: {
+                items: [
+                  {
+                    label: 'Title',
+                    value: 'hasTitle',
+                    selected: g.UserSettings.hasTitle,
+                  },
+                  {
+                    label: 'Headers',
+                    value: 'hasHeaders',
+                    selected: g.UserSettings.hasHeaders,
+                  },
+                  {
+                    label: 'Footer',
+                    value: 'hasFooter',
+                    selected: g.UserSettings.hasFooter,
+                  },
+                  {
+                    label: 'Leave top unchanged',
+                    value: 'leaveTop',
+                    selected: g.UserSettings.leaveTop,
+                  },
+                  {
+                    label: 'Leave left unchanged',
+                    value: 'leaveLeft',
+                    selected: g.UserSettings.leaveLeft,
+                  },
+                  {
+                    label: 'Leave bottom unchanged',
+                    value: 'leaveBottom',
+                    selected: g.UserSettings.leaveBottom,
+                  },
+                  {
+                    label: 'No bottom',
+                    value: 'noBottom',
+                    selected: g.UserSettings.noBottom,
+                  },
+                  {
+                    label: 'Center all',
+                    value: 'centerAll',
+                    selected: g.UserSettings.centerAll,
+                  },
+                  {
+                    label: 'Alternating',
+                    value: 'alternating',
+                    selected: g.UserSettings.alternating,
+                  },
+                ],
+              },
+            }),
+          )
+          .addWidget(widgets.setTableFormatDefaultsWidget.asDecoratedText()),
+      )
+      .addSection(
+        CardService.newCardSection()
+          .setHeader('COLOR THEMES')
+          .setCollapsible(true)
+          .setNumUncollapsibleWidgets(1)
+          .addWidget(colorThemeButtonSet())
+          .addWidget(widgets.colorThemeWidgets.fontColorWidget)
+          .addWidget(widgets.colorThemeWidgets.textColorWidget)
+          .addWidget(widgets.colorThemeWidgets.backgroundColorWidget)
+          .addWidget(widgets.colorThemeWidgets.accent1ColorWidget)
+          .addWidget(widgets.colorThemeWidgets.accent2ColorWidget)
+          .addWidget(widgets.colorThemeWidgets.accent3ColorWidget)
+          .addWidget(widgets.colorThemeWidgets.accent4ColorWidget)
+          .addWidget(widgets.colorThemeWidgets.accent5ColorWidget)
+          .addWidget(widgets.colorThemeWidgets.accent6ColorWidget)
+          .addWidget(widgets.colorThemeWidgets.hyperlinkColorWidget)
+          .addWidget(
+            widgets.colorThemeWidgets.setSpreadsheetThemeWidget.asDecoratedText(),
+          )
+          .addWidget(
+            widgets.colorThemeWidgets.saveSpreadsheetThemeWidget.asDecoratedText(),
+          ),
+      )
+      .addSection(
+        CardService.newCardSection()
+          .setHeader('STATIC/DYNAMIC')
+          .setCollapsible(true)
+          .setNumUncollapsibleWidgets(1)
+          .addWidget(
+            CardService.newButtonSet()
+              .addButton(widgets.makeRangeStaticWidget.asButtonIcon())
+              .addButton(widgets.makeRangeDynamicWidget.asButtonIcon())
+              .addButton(widgets.makeSheetStaticWidget.asButtonIcon())
+              .addButton(widgets.makeSheetDynamicWidget.asButtonIcon())
+              .addButton(widgets.makeSheetStaticNoNotesWidget.asButtonIcon()),
+          )
+          .addWidget(DIVIDER)
+          .addWidget(widgets.makeRangeStaticWidget.asDecoratedText())
+          .addWidget(widgets.makeSheetStaticWidget.asDecoratedText())
+          .addWidget(widgets.makeAllSheetsStaticWidget.asDecoratedText())
+          .addWidget(widgets.makeSheetListStaticWidget.asDecoratedText())
+          .addWidget(DIVIDER)
+          .addWidget(widgets.makeRangeDynamicWidget.asDecoratedText())
+          .addWidget(widgets.makeSheetDynamicWidget.asDecoratedText())
+          .addWidget(widgets.makeAllSheetsDynamicWidget.asDecoratedText())
+          .addWidget(widgets.makeSheetListDynamicWidget.asDecoratedText())
+          .addWidget(DIVIDER)
+          .addWidget(widgets.makeRangeStaticNoNotesWidget.asDecoratedText())
+          .addWidget(widgets.makeSheetStaticNoNotesWidget.asDecoratedText()),
+      )
+      .addSection(
+        CardService.newCardSection()
+          .setHeader('DASHBOARDS')
+          .setCollapsible(true)
+          .setNumUncollapsibleWidgets(1)
+          .addWidget(
+            CardService.newButtonSet()
+              .addButton(widgets.createStatsDashboardWidget.asButtonIcon())
+              .addButton(
+                widgets.createNamedRangesDashboardWidget.asButtonIcon(),
+              )
+              .addButton(
+                widgets.showNamedFunctionsDashboardWidget.asButtonIcon(),
+              )
+              .addButton(widgets.showFormulaWidget.asButtonIcon()),
+          )
+          .addWidget(widgets.createStatsDashboardWidget.asDecoratedText())
+          .addWidget(widgets.createNamedRangesDashboardWidget.asDecoratedText())
+          .addWidget(widgets.updateNamedRangesDashboardWidget.asDecoratedText())
+          .addWidget(widgets.createNamedRangesFromSheetWidget.asDecoratedText())
+          .addWidget(
+            widgets.createNamedRangesFromSelectionWidget.asDecoratedText(),
+          )
+          .addWidget(widgets.showFormulaWidget.asDecoratedText())
+          .addWidget(DIVIDER),
+      )
+      .addSection(
+        CardService.newCardSection()
+          .setHeader('RANDOM DATA')
+          .setCollapsible(true)
+          .setNumUncollapsibleWidgets(0)
+          .addWidget(widgets.requestRandomDataWidget.asDecoratedText())
+          .addWidget(widgets.randomDataRequestedWidget)
+          .addWidget(
+            createFormElementWidget_({
+              title: 'Fields to include',
+              id: 'randomOptions',
+              checkboxGroup: {
+                items: [
+                  {
+                    label: 'Date',
+                    value: 'randomDate',
+                    selected: false,
+                  },
+                  {
+                    label: 'ID',
+                    value: 'randomId',
+                    selected: false,
+                  },
+                  {
+                    label: 'Name',
+                    value: 'randomName',
+                    selected: false,
+                  },
+                  {
+                    label: 'Address',
+                    value: 'randomAddress',
+                    selected: false,
+                  },
+                  {
+                    label: 'Phone',
+                    value: 'randomPhone',
+                    selected: false,
+                  },
+                  {
+                    label: 'Email',
+                    value: 'randomEmail',
+                    selected: false,
+                  },
+                ],
+              },
+            }),
+          )
+          .addWidget(DIVIDER)
+          .addWidget(widgets.requestRandomNumbersWidget.asDecoratedText())
+          .addWidget(widgets.randomNumbersRequestedWidget)
+          .addWidget(
+            createFormElementWidget_({
+              title: `It's either the data above or random numbers. Can't return both at the same time.`,
+              id: 'randomNumberOptions',
+              checkboxGroup: {
+                items: [
+                  {
+                    label: 'Integers',
+                    value: 'randomIntegers',
+                    selected: false,
+                  },
+                  {
+                    label: 'Real Numbers',
+                    value: 'randomNumbers',
+                    selected: false,
+                  },
+                ],
+              },
+            }),
+          ),
+      )
+      .addSection(
+        CardService.newCardSection()
+          .setHeader('CAPTIONS')
+          .setCollapsible(true)
+          .setNumUncollapsibleWidgets(1)
+          .addWidget(
+            CardService.newTextParagraph().setText(
+              'Format selected cells as captions',
+            ),
+          )
+          .addWidget(
+            CardService.newButtonSet()
+              .addButton(widgets.captionTopLeftWidget.asTextButton())
+              .addButton(widgets.captionTopWidget.asTextButton())
+              .addButton(widgets.captionTopRightWidget.asTextButton()),
+          )
+          .addWidget(
+            CardService.newButtonSet()
+              .addButton(widgets.captionLeftWidget.asTextButton())
+              .addButton(widgets.captionClearWidget.asTextButton())
+              .addButton(widgets.captionRightWidget.asTextButton()),
+          )
+          .addWidget(
+            CardService.newButtonSet()
+              .addButton(widgets.captionBottomLeftWidget.asTextButton())
+              .addButton(widgets.captionBottomWidget.asTextButton())
+              .addButton(widgets.captionBottomRightWidget.asTextButton()),
+          ),
+      )
+      .addSection(
+        CardService.newCardSection()
+          .setHeader('LOGS AND PLAYGROUNDS')
+          .setCollapsible(true)
+          .setNumUncollapsibleWidgets(2)
+          .addWidget(
+            CardService.newButtonSet()
+              .addButton(widgets.emptyLogRecordsWidget.asButtonIcon())
+              .addButton(widgets.playground1Widget.asButtonIcon())
+              .addButton(widgets.playground2Widget.asButtonIcon())
+              .addButton(widgets.parseJSONFromSheetWidget.asButtonIcon())
+              .addButton(widgets.parseJSONFromRangeWidget.asButtonIcon())
+              .addButton(widgets.importJSONFromUrlWidget.asButtonIcon()),
+          )
+          .addWidget(
+            CardService.newButtonSet()
+              .addButton(widgets.backupSheetWidget.asButtonIcon())
+              .addButton(widgets.toggleEventObjectPrintingWidget.asButtonIcon())
+              .addButton(
+                CardService.newImageButton()
+                  .setAltText('Run onOpen')
+                  .setOnClickAction(
+                    CardService.newAction().setFunctionName('onOpen'),
+                  )
+                  .setIconUrl(buildIconUrl_('menu_open')),
+              )
+              .addButton(widgets.helpWidget.asButtonIcon()),
+          )
+          .addWidget(DIVIDER)
+          .addWidget(widgets.emptyLogRecordsWidget.asDecoratedText())
+          .addWidget(widgets.playground1Widget.asDecoratedText())
+          .addWidget(widgets.playground2Widget.asDecoratedText())
+          .addWidget(widgets.playground3Widget.asDecoratedText())
+          .addWidget(widgets.parseJSONFromSheetWidget.asDecoratedText())
+          .addWidget(widgets.parseJSONFromRangeWidget.asDecoratedText()),
+      )
       .build();
-
-    return toolsCard;
   }
 
   function getActiveInfoStr() {

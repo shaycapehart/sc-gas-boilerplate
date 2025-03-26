@@ -1,9 +1,16 @@
 import { Settings } from '@core/environment/Settings';
 import { ImageCollectionType, SettingsOptions } from '@core/types/addon';
-import { AppLib } from '@core/types/globals';
 
 globalThis.g = {};
-globalThis.daygs = AppLib.dayjs;
+globalThis.daygs = Dayjs.dayjs;
+
+function getRgb_(themeColorType) {
+  return SpreadsheetApp.getActive()
+    .getSpreadsheetTheme()
+    .getConcreteColor(themeColorType)
+    .asRgbColor()
+    .asHexString();
+}
 
 const addGetter_ = <T>(propName: string, value: () => T, target = g) => {
   Object.defineProperty(target, propName, {
@@ -49,6 +56,23 @@ var myGlobalConfig: [string, () => unknown][] = [
       ['', 'A', 'B', 'C', 'D']
         .map((f) => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map((s) => f + s))
         .flat(),
+  ],
+  [
+    'Theme',
+    () => ({
+      fontFamily: SpreadsheetApp.getActive()
+        .getSpreadsheetTheme()
+        .getFontFamily(),
+      textColor: getRgb_(SpreadsheetApp.ThemeColorType.TEXT),
+      chartBackground: getRgb_(SpreadsheetApp.ThemeColorType.BACKGROUND),
+      accent1: getRgb_(SpreadsheetApp.ThemeColorType.ACCENT1),
+      accent2: getRgb_(SpreadsheetApp.ThemeColorType.ACCENT2),
+      accent3: getRgb_(SpreadsheetApp.ThemeColorType.ACCENT3),
+      accent4: getRgb_(SpreadsheetApp.ThemeColorType.ACCENT4),
+      accent5: getRgb_(SpreadsheetApp.ThemeColorType.ACCENT5),
+      accent6: getRgb_(SpreadsheetApp.ThemeColorType.ACCENT6),
+      hyperlinkColor: getRgb_(SpreadsheetApp.ThemeColorType.HYPERLINK),
+    }),
   ],
   [
     'SheetIcons',

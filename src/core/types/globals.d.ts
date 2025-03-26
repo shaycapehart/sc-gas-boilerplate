@@ -1,10 +1,11 @@
 import { default as dayjs } from 'dayjs';
 import 'dayjs/plugin/duration';
-import { ImageCollectionType, SettingsOptions } from './addon';
+import { ImageCollectionType, SettingsOptions, ThemeType } from './addon';
 
-declare var AppLib: {
-  dayjs: typeof dayjs;
-};
+// declare var AppLib: {
+//   dayjs: typeof dayjs;
+// };
+declare var Dayjs: { dayjs: typeof dayjs };
 
 declare global {
   var g: {
@@ -15,6 +16,7 @@ declare global {
     ActiveRowsRange?: GoogleAppsScript.Spreadsheet.Range;
     ActiveStartRow?: number;
     ABCs?: string[];
+    Theme?: ThemeType;
     LOG_SHEETNAME?: string;
     SheetIcons?: ImageCollectionType;
   };

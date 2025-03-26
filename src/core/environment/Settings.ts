@@ -6,32 +6,38 @@ namespace Settings {
   export const APP_TITLE = 'SC GAS BOILERPLATE';
   export const SPREADSHEET_ICON_FOLDER_ID = '1pC5a4ehrnLL5_McnQPN5UXm1gQ2hVf9R';
   export const DEFAULT = {
-    TABLE: {
-      HAS_TITLE: false,
-      HAS_HEADERS: true,
-      HAS_FOOTER: false,
-      LEAVE_TOP: false,
-      LEAVE_LEFT: false,
-      LEAVE_BOTTOM: false,
-      NO_BOTTOM: false,
-      CENTER_ALL: true,
-      ALTERNATING: false,
+    hasTitle: false,
+    hasHeaders: true,
+    hasFooter: false,
+    leaveTop: false,
+    leaveLeft: false,
+    leaveBottom: false,
+    noBottom: false,
+    centerAll: true,
+    alternating: false,
+    backgroundTitle: 6,
+    backgroundHeaders: 14,
+    backgroundDataFirst: 19,
+    backgroundDataSecond: 16,
+    backgroundFooter: 13,
+    bordersAll: 6,
+    bordersHorizontal: 10,
+    bordersVertical: 10,
+    bordersTitleBottom: 6,
+    bordersHeadersBottom: 9,
+    bordersThickness: 1,
+    bordersHeadersVertical: 10,
+    helpControl: 'off',
+    themeControl: 'off',
+    debugControl: 'on',
+    customThemes: {
+      theme1: null,
+      theme2: null,
+      theme3: null,
+      theme4: null,
+      theme5: null,
+      theme6: null,
     },
-    BACKGROUND_TITLE: 6,
-    BACKGROUND_HEADERS: 14,
-    BACKGROUND_DATA_FIRST: 19,
-    BACKGROUND_DATA_SECOND: 16,
-    BACKGROUND_FOOTER: 13,
-    BORDERS_ALL: 6,
-    BORDERS_HORIZONTAL: 10,
-    BORDERS_VERTICAL: 10,
-    BORDERS_TITLE_BOTTOM: 6,
-    BORDERS_HEADERS_BOTTOM: 9,
-    BORDERS_HEADERS_VERTICAL: 10,
-    BORDERS_THICKNESS: 1,
-    DEBUG_CONTROL: 'ON',
-    HELP_CONTROL: 'off',
-    LOG_SHEETNAME: 'app_log',
   };
 
   /**
@@ -52,35 +58,7 @@ namespace Settings {
    */
   export function getSettingsForUser(): SettingsOptions {
     const savedSettings = cachedPropertiesForUser_().get(SETTINGS_KEY, {});
-    const settings = Object.assign(
-      {},
-      {
-        hasTitle: Settings.DEFAULT.TABLE.HAS_TITLE,
-        hasHeaders: Settings.DEFAULT.TABLE.HAS_HEADERS,
-        hasFooter: Settings.DEFAULT.TABLE.HAS_FOOTER,
-        leaveTop: Settings.DEFAULT.TABLE.LEAVE_TOP,
-        leaveLeft: Settings.DEFAULT.TABLE.LEAVE_LEFT,
-        leaveBottom: Settings.DEFAULT.TABLE.LEAVE_BOTTOM,
-        noBottom: Settings.DEFAULT.TABLE.NO_BOTTOM,
-        centerAll: Settings.DEFAULT.TABLE.CENTER_ALL,
-        alternating: Settings.DEFAULT.TABLE.ALTERNATING,
-        backgroundTitle: Settings.DEFAULT.BACKGROUND_TITLE,
-        backgroundHeaders: Settings.DEFAULT.BACKGROUND_HEADERS,
-        backgroundDataFirst: Settings.DEFAULT.BACKGROUND_DATA_FIRST,
-        backgroundDataSecond: Settings.DEFAULT.BACKGROUND_DATA_SECOND,
-        backgroundFooter: Settings.DEFAULT.BACKGROUND_FOOTER,
-        bordersAll: Settings.DEFAULT.BORDERS_ALL,
-        bordersHorizontal: Settings.DEFAULT.BORDERS_HORIZONTAL,
-        bordersVertical: Settings.DEFAULT.BORDERS_VERTICAL,
-        bordersTitleBottom: Settings.DEFAULT.BORDERS_TITLE_BOTTOM,
-        bordersHeadersBottom: Settings.DEFAULT.BORDERS_HEADERS_BOTTOM,
-        bordersThickness: Settings.DEFAULT.BORDERS_THICKNESS,
-        bordersHeadersVertical: Settings.DEFAULT.BORDERS_HEADERS_VERTICAL,
-        helpControl: Settings.DEFAULT.HELP_CONTROL,
-        debugControl: Settings.DEFAULT.DEBUG_CONTROL,
-      },
-      savedSettings,
-    );
+    const settings = Object.assign({}, Settings.DEFAULT, savedSettings);
     return settings;
   }
 
