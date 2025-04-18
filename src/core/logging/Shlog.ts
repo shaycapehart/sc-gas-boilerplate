@@ -1,11 +1,10 @@
 // @ts-ignore
 import { Settings } from '@core/environment/Settings';
-import { type Dayjs } from 'dayjs';
 
 export interface TicToc {
   id?: number;
-  start?: Dayjs;
-  stop?: Dayjs;
+  start?: Date;
+  stop?: Date;
   depth?: number;
   name?: string;
   key?: string;
@@ -26,10 +25,10 @@ namespace Shlog {
   const TICTOCS: TicToc[] = [];
 
   export function init(sheetName: string = SHEET_NAME) {
-    const start = daygs();
-    ID = start.unix();
+    const start = new Date();
+    ID = start.getTime();
     TICTOCS.push({
-      id: start.valueOf(),
+      id: start.getTime(),
       start,
       name: 'Pre-execution',
       depth: 0,
@@ -64,9 +63,9 @@ namespace Shlog {
     const settings = Settings.getSettingsForUser();
     // console.log('settings :>> ', settings);
     DEPTH++;
-    const start: Dayjs = daygs();
+    const start = new Date();
     const tictoc = {
-      id: start.valueOf(),
+      id: start.getTime(),
       start,
       depth: DEPTH,
       name,
@@ -208,10 +207,6 @@ namespace Shlog {
     }
   }
 
-  function diffMs_(start: Dayjs, finish?: Dayjs) {
-    return daygs(finish || undefined).diff(start, 'millisecond') / 1000;
-  }
-
   function saveTicTocs_(tt: TicToc) {
     const runStop = tt.stop;
     const newRows = [];
@@ -222,8 +217,8 @@ namespace Shlog {
 
       newRows.push([
         ID,
-        start.format('YYYY-MM-DD HH:mm:ss.SSS'),
-        stop ? diffMs_(start, stop) : null,
+        start.toJSON(),
+        stop ? stop.getTime() - start.getTime() : null,
         methodName,
         parameters,
         message,
@@ -247,8 +242,8 @@ namespace Shlog {
           ...newRows,
           [
             ID,
-            runStop.format('YYYY-MM-DD HH:mm:ss.SSS'),
-            diffMs_(runStop),
+            runStop.toJSON(),
+            Date.now() - runStop.getTime(),
             'Post Execution',
             ...Array(4).fill(null),
           ],
@@ -295,7 +290,7 @@ namespace Shlog {
     DEPTH--;
     const tictocIndex = TICTOCS.findIndex((tt) => tt.id && tt.id === id);
     const tictoc = TICTOCS[tictocIndex];
-    tictoc.stop = daygs();
+    tictoc.stop = new Date();
     tictoc.result = options.result
       ? cropString_(JSON.stringify(options.result, null, 2))
       : '';
@@ -310,11 +305,6 @@ namespace Shlog {
     if (DEPTH === 0 || !!options.error) saveTicTocs_(tictoc);
 
     return options.result || true;
-  }
-
-  function secStr_(startD: Dayjs, stopD: Dayjs) {
-    // @ts-ignore
-    return daygs.duration(stopD.diff(startD)).format('s.SSS');
   }
 
   function printTictocs_(title: string) {
@@ -337,10 +327,12 @@ namespace Shlog {
             name.length > 31
               ? `${name.slice(0, 31)}...`
               : `${name}${' '.repeat(34)}`.slice(0, 34);
-          const startStr = start.format('HH:mm:ss.SSS');
-          const stopStr = stop ? stop.format('HH:mm:ss.SSS') : '            ';
+          const startStr = start.toJSON();
+          const stopStr = stop ? stop.toJSON() : '            ';
           const duration = stop
-            ? `      ${secStr_(start, stop)} sec`.slice(-11)
+            ? `      ${stop.getTime() - start.getTime()} milliseconds`.slice(
+                -11,
+              )
             : ' running...';
           return [depthStr, nameStr, startStr, stopStr, duration];
         }),
@@ -357,8 +349,8 @@ namespace Shlog {
     TICTOCS.push({
       name: 'snap',
       depth: DEPTH,
-      start: daygs(),
-      stop: daygs(),
+      start: new Date(),
+      stop: new Date(),
       message,
     });
   }
@@ -372,9 +364,9 @@ namespace Shlog {
       error?: string;
     } = {},
   ) {
-    const stop = daygs();
+    const stop = new Date();
     const tictoc: TicToc = {
-      id: stop.valueOf(),
+      id: stop.getTime(),
       start: stop,
       stop,
       depth: DEPTH,

@@ -218,6 +218,10 @@ namespace ActionHandlers {
     const theme =
       g.UserSettings.customThemes[e.commonEventObject.parameters.title];
     changeTheme(theme);
+    SpreadsheetApp.openById('10vEvwpazDrRA6Fxjeok-xij1UzCY4VoXA0J-Kn51FXY')
+      .getSheetByName('Jan')
+      .copyTo(g.ss)
+      .setName('Theme Sample');
     return finished(`Spreadsheet theme updated`, tictoc);
   }
   export function setSpreadsheetTheme(e: GoogleAppsScript.Addons.EventObject) {
@@ -501,11 +505,7 @@ namespace ActionHandlers {
 
     if (centerAll) dataRange.setHorizontalAlignment(CENTER);
 
-    // rng.offset(title + headers, 0, rng.getHeight() - title - headers).setHorizontalAlignment('center')
-
     rng.setFontSizes(fontSizes);
-
-    // .offset(title + headers, 0, rng.getHeight() - title - headers)
 
     dataRange.setBorder(
       null,
@@ -1319,7 +1319,7 @@ namespace ActionHandlers {
     const yColValues = statsSheet.getRange('Y:Y').getValues();
 
     sheetNames.forEach((sn, i) => {
-      statsSheet.getRange(6 + 100 * i, 1).setValue(yColValues[5 + 100 * i][0]);
+      statsSheet.getRange(5 + 100 * i, 1).setValue(yColValues[5 + 100 * i][0]);
     });
 
     return finished(`Successful created stats dashboard`, tictoc);

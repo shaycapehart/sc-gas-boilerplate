@@ -2,7 +2,7 @@ import { Settings } from '@core/environment/Settings';
 import { ImageCollectionType, SettingsOptions } from '@core/types/addon';
 
 globalThis.g = {};
-globalThis.daygs = Dayjs.dayjs;
+// globalThis.daygs = Dayjs.dayjs;
 
 function getRgb_(themeColorType) {
   return SpreadsheetApp.getActive()
@@ -60,9 +60,7 @@ var myGlobalConfig: [string, () => unknown][] = [
   [
     'Theme',
     () => ({
-      fontFamily: SpreadsheetApp.getActive()
-        .getSpreadsheetTheme()
-        .getFontFamily(),
+      fontFamily: g.ss.getSpreadsheetTheme().getFontFamily(),
       textColor: getRgb_(SpreadsheetApp.ThemeColorType.TEXT),
       chartBackground: getRgb_(SpreadsheetApp.ThemeColorType.BACKGROUND),
       accent1: getRgb_(SpreadsheetApp.ThemeColorType.ACCENT1),
